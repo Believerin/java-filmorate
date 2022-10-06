@@ -5,7 +5,6 @@ import javax.validation.constraints.*;
 import java.time.LocalDate;
 
 @Data
-
 public class User {
 
     @EqualsAndHashCode.Exclude
@@ -21,7 +20,6 @@ public class User {
     private String name;
     @Past
     @NotNull
-  //  @NotBlank
     private final LocalDate birthday;
     @NotNull
     private static Integer nextId = 1;
@@ -37,7 +35,6 @@ public class User {
         this.id = nextId;
         nextId++;
     }
-
 
     public void setName(String name) {
         this.name = name;
