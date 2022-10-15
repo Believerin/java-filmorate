@@ -6,9 +6,7 @@ import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -60,7 +58,7 @@ class FilmorateApplicationFilmTest {
 
 	@BeforeAll
 	public void create() {
-	//	FilmorateApplication.main(new String[]{});
+		FilmorateApplication.main(new String[]{});
 		gson = new GsonBuilder()
 				.registerTypeAdapter(LocalDate.class, new LocalDateAdapter())
 				.create();
@@ -76,6 +74,11 @@ class FilmorateApplicationFilmTest {
 		filmBadRelease2 = new Film("filmBadRelease2", "drama", Film.CINEMA_START, 90);
 		filmBadDuration1 = new Film("filmBadDuration1", "drama", LocalDate.of(2001, 6, 3), -90);
 		filmBadDuration2 = new Film("filmBadDuration2", "drama", LocalDate.of(2001, 6, 3), 0);
+	}
+
+	@AfterAll
+	public void stop() {
+		FilmorateApplication.stop();
 	}
 
 	@Test

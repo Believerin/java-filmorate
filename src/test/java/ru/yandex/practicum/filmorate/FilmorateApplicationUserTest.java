@@ -3,9 +3,7 @@ package ru.yandex.practicum.filmorate;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -66,6 +64,11 @@ class FilmorateApplicationUserTest {
         userBadLogin1 = new User("a@email.ru", "","user", LocalDate.of(1990, 6, 3));
         userBadLogin2 = new User("a@email.ru", "user Login","user", LocalDate.of(1990, 6, 3));
         userBadBirthDay1 = new User("a@email.ru", "userLogin","user", LocalDate.of(2025, 6, 3));
+    }
+
+    @AfterAll
+    public void stop() {
+        FilmorateApplication.stop();
     }
 
     @Test
