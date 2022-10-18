@@ -11,7 +11,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
-public class UserService {
+public class UserService implements UserServing {
 
     private final UserStorage userStorage;
 
@@ -34,7 +34,6 @@ public class UserService {
     }
 
     public List<User> deleteFriend(Integer userId, Integer friendId) {
-        Map<Integer, User> o = userStorage.getUsers();
         filterUsersWithFriendship(userId, friendId)
                 .forEach(user -> {
                      user.getFriends().removeIf(friend -> filterUsersWithFriendship(userId, friendId).stream()
@@ -62,10 +61,4 @@ public class UserService {
                 .filter(user -> user.getId().equals(userId) || user.getId().equals(friendId))
                 .collect(Collectors.toList());
     }
-
-
-/*    public List<Users>
-    return friendsData.getFriends().stream()
-                .flatMap(friend -> postService.findAllViaEmail(friendsData.getSize(), friendsData.getSort(), friend).stream())
-            .collect(Collectors.toList());*/
 }

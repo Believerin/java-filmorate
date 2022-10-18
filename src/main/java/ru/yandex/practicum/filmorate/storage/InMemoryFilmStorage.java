@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.storage;
 import lombok.Getter;
 import org.springframework.stereotype.Component;
 
+import ru.yandex.practicum.filmorate.exception.NoSuchBodyException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 
@@ -28,7 +29,7 @@ public class InMemoryFilmStorage implements FilmStorage {
         if (films.containsKey(id)) {
             return films.get(id);
         } else {
-            throw new NullPointerException(String.format("id %s отсутствует", id));
+            throw new NoSuchBodyException(String.format("Фильм с id %s отсутствует", id));
         }
     }
 
@@ -54,10 +55,10 @@ public class InMemoryFilmStorage implements FilmStorage {
                 films.put(film.getId(), film);
                 return film;
             } else {
-                throw new NullPointerException(String.format("Фильм %s отсутствует", film.getId()));
+                throw new NoSuchBodyException(String.format("Фильм с id %s отсутствует", film.getId()));
             }
         } else {
-            throw new NullPointerException("Данные фильма не соответствуют критериям");
+            throw new ValidationException("Данные фильма не соответствуют критериям");
         }
     }
 }
