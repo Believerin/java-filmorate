@@ -3,6 +3,8 @@ package ru.yandex.practicum.filmorate.model;
 import lombok.*;
 import javax.validation.constraints.*;
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
 public class User {
@@ -23,6 +25,8 @@ public class User {
     private final LocalDate birthday;
     @NotNull
     private static Integer nextId = 1;
+    @EqualsAndHashCode.Exclude
+    private Set<Integer> friends = new HashSet<>();
 
     public User(String email, String login, String name, LocalDate birthday) {
         this.email = email;
@@ -39,4 +43,5 @@ public class User {
     public void setName(String name) {
         this.name = name;
     }
+
 }

@@ -5,6 +5,8 @@ import lombok.*;
 import javax.validation.constraints.*;
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
 public class Film {
@@ -25,6 +27,9 @@ public class Film {
     private final Integer duration;
     @NotNull
     private static Integer nextId = 1;
+    @EqualsAndHashCode.Exclude
+    @NonNull
+    private Set<Integer> likes = new HashSet<>();
 
     public void setId() {
         this.id = nextId;
