@@ -1,6 +1,6 @@
 # java-filmorate
 Template repository for Filmorate project.
-![](../java-filmorate/src/main/resources/ER.png)
+![](/src/main/resources/ER.png)
 
 Таблица "Friendship" - соединительная для User#1 и User#2 (friend). Имеет в качестве первичного ключа уникальную пару "user_id - friend_id".
 
