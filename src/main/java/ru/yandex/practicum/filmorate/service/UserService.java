@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.status.Friendship;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.List;
@@ -22,30 +23,30 @@ public class UserService implements UserServing {
 
     public List<User> addFriend(Integer userId, Integer friendId) {
         Map<Integer, User> o =  userStorage.getUsers();
-        filterUsersWithFriendship(userId, friendId)
-            .forEach(user -> {
-                if (user.equals(o.get(userId))) {
-                    user.getFriends().add(o.get(friendId).getId());
-                } else {
-                    user.getFriends().add(o.get(userId).getId());
-                }
-            });
-        return filterUsersWithFriendship(userId, friendId);
+        filterCoupleOfUsersWhoBecomeFriends(userId, friendId)
+            .forEach(user ->
+                    user.getFriends().put(user.equals(o.get(userId)) ? friendId : userId, Friendship.NOT_CONFIRMED));
+        return filterCoupleOfUsersWhoBecomeFriends(userId, friendId);
     }
 
     public List<User> deleteFriend(Integer userId, Integer friendId) {
-        filterUsersWithFriendship(userId, friendId)
-                .forEach(user -> {
-                     user.getFriends().removeIf(friend -> filterUsersWithFriendship(userId, friendId).stream()
-                             .map(User::getId)
-                             .collect(Collectors.toList()).contains(friend));
-                });
-        return filterUsersWithFriendship(userId, friendId);
+        Map<Integer, User> o =  userStorage.getUsers();
+        filterCoupleOfUsersWhoBecomeFriends(userId, friendId)
+                .forEach(user -> user.getFriends().remove(user.equals(o.get(userId)) ? friendId : userId));
+        return filterCoupleOfUsersWhoBecomeFriends(userId, friendId);
+    }
+
+    public List<User> confirmFriend(Integer userId, Integer friendId) {
+        Map<Integer, User> o =  userStorage.getUsers();
+        filterCoupleOfUsersWhoBecomeFriends(userId, friendId)
+                .forEach(user ->
+                        user.getFriends().put(user.equals(o.get(userId)) ? friendId : userId, Friendship.CONFIRMED));
+        return filterCoupleOfUsersWhoBecomeFriends(userId, friendId);
     }
 
     public Set<User> getAllFriends(Integer userId) {
-        return userStorage.getUsers().get(userId).getFriends().stream()
-                .map(o -> userStorage.getUsers().get(o))
+        return userStorage.getUsers().get(userId).getFriends().keySet().stream()
+                .map(i -> userStorage.getUsers().get(i))
                 .collect(Collectors.toSet());
     }
 
@@ -56,7 +57,7 @@ public class UserService implements UserServing {
     }
 
     //............................ Служебные методы ..............................................
-    private List<User> filterUsersWithFriendship (Integer userId, Integer friendId) {
+    private List<User> filterCoupleOfUsersWhoBecomeFriends (Integer userId, Integer friendId) {
         return userStorage.getUsers().values().stream()
                 .filter(user -> user.getId().equals(userId) || user.getId().equals(friendId))
                 .collect(Collectors.toList());
