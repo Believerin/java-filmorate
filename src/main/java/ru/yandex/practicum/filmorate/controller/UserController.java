@@ -63,6 +63,7 @@ public class UserController {
         return userService.deleteFriend(id, friendId);
     }
 
+
     @GetMapping("/{id}/friends")
     public Set<User> getAllFriends(@PathVariable Integer id) {
         if (id <= 0) {

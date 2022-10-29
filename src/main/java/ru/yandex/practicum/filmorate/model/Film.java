@@ -1,9 +1,9 @@
 package ru.yandex.practicum.filmorate.model;
 
 import lombok.*;
+import ru.yandex.practicum.filmorate.status.Rating;
 
 import javax.validation.constraints.*;
-import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
@@ -30,6 +30,10 @@ public class Film {
     @EqualsAndHashCode.Exclude
     @NonNull
     private Set<Integer> likes = new HashSet<>();
+    @EqualsAndHashCode.Exclude
+    private Set<String> genre;
+    @EqualsAndHashCode.Exclude
+    private Rating rating;
 
     public void setId() {
         this.id = nextId;
