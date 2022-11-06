@@ -1,16 +1,12 @@
 package ru.yandex.practicum.filmorate.model;
 
 import lombok.*;
-import ru.yandex.practicum.filmorate.status.Friendship;
 
 import javax.validation.constraints.*;
 import java.time.LocalDate;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 
 @Data
+@Builder
 public class User {
 
     @EqualsAndHashCode.Exclude
@@ -29,15 +25,6 @@ public class User {
     private final LocalDate birthday;
     @NotNull
     private static Integer nextId = 1;
-    @EqualsAndHashCode.Exclude
-    private Map<Integer, Friendship> friends = new HashMap<>();
-
-    public User(String email, String login, String name, LocalDate birthday) {
-        this.email = email;
-        this.login = login;
-        this.name = name;
-        this.birthday = birthday;
-    }
 
     public void setId() {
         this.id = nextId;

@@ -13,5 +13,7 @@ public interface UserServing {
 
     Set<User> getAllFriends(Integer userId);
 
+    List<User> confirmFriend(Integer userId, Integer friendId);
+
     Set<User> getCommonFriends(Integer userId, Integer otherUserId);
 }

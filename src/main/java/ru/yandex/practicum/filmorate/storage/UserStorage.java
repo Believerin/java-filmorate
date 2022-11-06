@@ -10,7 +10,7 @@ public interface UserStorage {
 
     Collection<User> findAll();
 
-    User getUser(@PathVariable Integer id);
+    User getUserById(@PathVariable Integer id);
 
     User createUser(User user);
 

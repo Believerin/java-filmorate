@@ -1,49 +1,55 @@
 package ru.yandex.practicum.filmorate.storage;
 
 import lombok.Getter;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import ru.yandex.practicum.filmorate.exception.NoSuchBodyException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
-
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.Mpa;
 
 import java.time.LocalDate;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.*;
+
 
 @Component
+@Qualifier("Secondary")
 public class InMemoryFilmStorage implements FilmStorage {
+
+    private final FilmStorage filmStorage;
 
     @Getter
     private final Map<Integer, Film> films = new HashMap<>();
-
-    public Collection<Film> findAll() {
-        return films.values();
+    
+    @Autowired
+    public InMemoryFilmStorage(@Qualifier("priority") FilmStorage filmStorage) {
+        this.filmStorage = filmStorage;
     }
 
-    public Film getFilm(Integer id) {
-        if (films.containsKey(id)) {
-            return films.get(id);
+    public Collection<Film> findAll() {
+        return filmStorage.findAll();
+    }
+
+    public  Film getFilmById(Integer id) {
+        Film film = filmStorage.getFilmById(id);
+        if (film != null) {
+            return film;
         } else {
             throw new NoSuchBodyException(String.format("Фильм с id %s отсутствует", id));
         }
     }
 
     public Film createFilm(Film film) {
-        List<String> names = films.values().stream()
-                .map(Film::getName)
-                .collect(Collectors.toList());
-        if (names.contains(film.getName())) {
-            throw new ValidationException("Фильм уже существует");
-        }
         if (film.getReleaseDate().isAfter(LocalDate.of(1895, 12, 28))) {
-            film.setId();
-            films.put(film.getId(), film);
-            return film;
+            Film o = filmStorage.createFilm(film);
+            if (o == null) {
+                throw new ValidationException("Фильм уже существует");
+            } else {
+                return o;
+            }
         } else {
             throw new ValidationException("Данные фильма не соответствуют критериям");
         }
@@ -51,14 +57,30 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     public Film updateFilm(Film film) {
         if (film.getReleaseDate().isAfter(LocalDate.of(1895, 12, 28))) {
-            if (films.containsKey(film.getId())) {
-                films.put(film.getId(), film);
-                return film;
-            } else {
+            if (filmStorage.updateFilm(film) == null) {
                 throw new NoSuchBodyException(String.format("Фильм с id %s отсутствует", film.getId()));
+            } else {
+                return getFilmById(film.getId());
             }
         } else {
             throw new ValidationException("Данные фильма не соответствуют критериям");
         }
+    }
+
+    public Mpa getMpa (int id) {
+       return filmStorage.getMpa(id);
+    }
+
+    public Collection<Mpa> findAllMpa() {
+        return filmStorage.findAllMpa();
+    }
+
+    @Override
+    public Genre getGenre(int id) {
+        return filmStorage.getGenre(id);
+    }
+    @Override
+    public Collection<Genre> findAllGenres() {
+        return filmStorage.findAllGenres();
     }
 }

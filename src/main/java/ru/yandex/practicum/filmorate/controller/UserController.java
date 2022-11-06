@@ -2,10 +2,10 @@ package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.NoSuchBodyException;
 import ru.yandex.practicum.filmorate.model.*;
-import ru.yandex.practicum.filmorate.service.UserService;
 import ru.yandex.practicum.filmorate.service.UserServing;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
@@ -18,11 +18,11 @@ import java.util.*;
 public class UserController {
 
     private final UserStorage userStorage;
-    private final UserServing userService;
+    private final UserServing userServing;
     @Autowired
-    public UserController(UserStorage userStorage, UserServing userService) {
+    public UserController(@Qualifier("Secondary") UserStorage userStorage, @Qualifier("Secondary") UserServing userServing) {
         this.userStorage = userStorage;
-        this.userService = userService;
+        this.userServing = userServing;
     }
 
     @GetMapping
@@ -31,8 +31,8 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public User getUser(@PathVariable Integer id) {
-        return userStorage.getUser(id);
+    public User getUserById(@PathVariable Integer id) {
+        return userStorage.getUserById(id);
     }
 
     @PostMapping
@@ -51,7 +51,7 @@ public class UserController {
             throw new NoSuchBodyException(id < 0 & friendId < 0 ? "id пользователя и friendId друга"
                     : id < 0 ? "id пользователя" : "friendId друга");
         }
-        return userService.addFriend(id, friendId);
+        return userServing.addFriend(id, friendId);
     }
 
     @DeleteMapping("/{id}/friends/{friendId}")
@@ -60,7 +60,7 @@ public class UserController {
             throw new NoSuchBodyException(id < 0 & friendId < 0 ? "id пользователя и friendId друга"
                     : id < 0 ? "id пользователя" : "friendId друга");
         }
-        return userService.deleteFriend(id, friendId);
+        return userServing.deleteFriend(id, friendId);
     }
 
 
@@ -69,7 +69,7 @@ public class UserController {
         if (id <= 0) {
             throw new NoSuchBodyException("id пользователя");
         }
-        return userService.getAllFriends(id);
+        return userServing.getAllFriends(id);
     }
 
     @GetMapping("/{id}/friends/common/{otherId}")
@@ -78,6 +78,6 @@ public class UserController {
             throw new NoSuchBodyException(id < 0 & otherId < 0 ? "id 1-го пользователя и otherId 2-го пользователя":
                     id < 0 ? "id 1-го пользователя" : "otherId 2-го пользователя");
         }
-        return userService.getCommonFriends(id, otherId);
+        return userServing.getCommonFriends(id, otherId);
     }
 }

@@ -27,7 +27,7 @@ public class ErrorHandler {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleNotFoundBody(final NoSuchBodyException e) {
-        return new ErrorResponse(String.format("Запрашиваемый %s не найден", e.getParameter()));
+        return new ErrorResponse(String.format("Запрашиваемый %s или не найден", e.getParameter()));
     }
 
     @ExceptionHandler

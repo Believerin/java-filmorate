@@ -1,59 +1,46 @@
 package ru.yandex.practicum.filmorate.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.status.Friendship;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
+@Qualifier("Secondary")
 public class UserService implements UserServing {
 
     private final UserStorage userStorage;
+    private final UserServing userServing;
 
     @Autowired
-    public UserService(UserStorage userStorage) {
+    public UserService(@Qualifier("priority") UserStorage userStorage, @Qualifier("priority") UserServing userServing) {
         this.userStorage = userStorage;
+        this.userServing = userServing;
     }
 
     public List<User> addFriend(Integer userId, Integer friendId) {
-        Map<Integer, User> o =  userStorage.getUsers();
-        filterCoupleOfUsersWhoBecomeFriends(userId, friendId)
-            .forEach(user ->
-                    user.getFriends().put(user.equals(o.get(userId)) ? friendId : userId, Friendship.NOT_CONFIRMED));
-        return filterCoupleOfUsersWhoBecomeFriends(userId, friendId);
+        return userServing.addFriend(userId, friendId);
     }
 
     public List<User> deleteFriend(Integer userId, Integer friendId) {
-        Map<Integer, User> o =  userStorage.getUsers();
-        filterCoupleOfUsersWhoBecomeFriends(userId, friendId)
-                .forEach(user -> user.getFriends().remove(user.equals(o.get(userId)) ? friendId : userId));
-        return filterCoupleOfUsersWhoBecomeFriends(userId, friendId);
+        return userServing.deleteFriend(userId, friendId);
     }
 
     public List<User> confirmFriend(Integer userId, Integer friendId) {
-        Map<Integer, User> o =  userStorage.getUsers();
-        filterCoupleOfUsersWhoBecomeFriends(userId, friendId)
-                .forEach(user ->
-                        user.getFriends().put(user.equals(o.get(userId)) ? friendId : userId, Friendship.CONFIRMED));
-        return filterCoupleOfUsersWhoBecomeFriends(userId, friendId);
+        return userServing.confirmFriend(userId, friendId);
     }
 
     public Set<User> getAllFriends(Integer userId) {
-        return userStorage.getUsers().get(userId).getFriends().keySet().stream()
-                .map(i -> userStorage.getUsers().get(i))
-                .collect(Collectors.toSet());
+        return userServing.getAllFriends(userId);
     }
 
     public Set<User> getCommonFriends(Integer userId, Integer otherUserId) {
-        return getAllFriends(userId).stream()
-               .filter(friend -> getAllFriends(otherUserId).contains(friend))
-               .collect(Collectors.toSet());
+        return userServing.getCommonFriends(userId, otherUserId);
     }
 
     //............................ Служебные методы ..............................................

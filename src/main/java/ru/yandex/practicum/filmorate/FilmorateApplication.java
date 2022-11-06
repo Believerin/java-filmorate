@@ -19,5 +19,4 @@ public class FilmorateApplication {
 	public static void stop() {
 		app.stop();
 	}
-
 }
