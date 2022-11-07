@@ -1,40 +1,35 @@
-package ru.yandex.practicum.filmorate.storage;
+package ru.yandex.practicum.filmorate.service;
 
-import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.stereotype.Component;
-
+import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NoSuchBodyException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.Mpa;
+import ru.yandex.practicum.filmorate.model.*;
 
-import java.time.LocalDate;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
 
+import static ru.yandex.practicum.filmorate.model.Film.CINEMA_START;
 
-@Component
+@Service
 @Qualifier("Secondary")
-public class InMemoryFilmStorage implements FilmStorage {
-
-    private final FilmStorage filmStorage;
-
-    @Getter
-    private final Map<Integer, Film> films = new HashMap<>();
+public class FilmServiceImpl implements FilmService {
     
+    private final FilmDbService filmDbService;
+
     @Autowired
-    public InMemoryFilmStorage(@Qualifier("priority") FilmStorage filmStorage) {
-        this.filmStorage = filmStorage;
+    public FilmServiceImpl(FilmDbService filmDbService) {
+
+        this.filmDbService = filmDbService;
     }
 
     public Collection<Film> findAll() {
-        return filmStorage.findAll();
+        return filmDbService.findAll();
     }
 
     public  Film getFilmById(Integer id) {
-        Film film = filmStorage.getFilmById(id);
+        Film film = filmDbService.getFilmById(id);
         if (film != null) {
             return film;
         } else {
@@ -43,8 +38,8 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     public Film createFilm(Film film) {
-        if (film.getReleaseDate().isAfter(LocalDate.of(1895, 12, 28))) {
-            Film o = filmStorage.createFilm(film);
+        if (film.getReleaseDate().isAfter(CINEMA_START)) {
+            Film o = filmDbService.createFilm(film);
             if (o == null) {
                 throw new ValidationException("Фильм уже существует");
             } else {
@@ -56,11 +51,11 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     public Film updateFilm(Film film) {
-        if (film.getReleaseDate().isAfter(LocalDate.of(1895, 12, 28))) {
-            if (filmStorage.updateFilm(film) == null) {
+        if (film.getReleaseDate().isAfter(CINEMA_START)) {
+            if (filmDbService.updateFilm(film) == null) {
                 throw new NoSuchBodyException(String.format("Фильм с id %s отсутствует", film.getId()));
             } else {
-                return getFilmById(film.getId());
+                return filmDbService.getFilmById(film.getId());
             }
         } else {
             throw new ValidationException("Данные фильма не соответствуют критериям");
@@ -68,19 +63,33 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     public Mpa getMpa (int id) {
-       return filmStorage.getMpa(id);
+        return filmDbService.getMpa(id);
     }
 
     public Collection<Mpa> findAllMpa() {
-        return filmStorage.findAllMpa();
+        return filmDbService.findAllMpa();
     }
 
     @Override
     public Genre getGenre(int id) {
-        return filmStorage.getGenre(id);
+        return filmDbService.getGenre(id);
     }
     @Override
     public Collection<Genre> findAllGenres() {
-        return filmStorage.findAllGenres();
+        return filmDbService.findAllGenres();
+    }
+
+    public Film addLike (Integer filmId, Integer userId) {
+        filmDbService.addLike(filmId, userId);
+        return filmDbService.getFilmById(filmId);
+    }
+
+    public Film deleteLike (Integer filmId, Integer userId) {
+        filmDbService.deleteLike(filmId, userId);
+        return filmDbService.getFilmById(filmId);
+    }
+
+    public List<Film> getMostPopularFilms(int count) {
+      return filmDbService.getMostPopularFilms(count);
     }
 }

@@ -13,9 +13,8 @@ public class Mpa {
     private final int id;
     private final String name;
 
-    public Mpa(int id) {
-        this.id = id;
-        Rating r = id == 1 ? Rating.G : id == 2 ? Rating.PG : id == 3 ? Rating.PG13 : id == 4 ? Rating.R : Rating.NC17;
-        name = r.toString().equals( "PG13") ? "PG-13" : r.toString().equals("NC17") ? "NC-17" : r.toString();
+    public Mpa(Rating rating) {
+        name = rating.toString().equals( "PG13") ? "PG-13" : rating.toString().equals("NC17") ? "NC-17" : rating.toString();
+        this.id = rating.getMpaId();
     }
 }

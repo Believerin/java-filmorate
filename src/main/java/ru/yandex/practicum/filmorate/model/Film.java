@@ -3,11 +3,15 @@ package ru.yandex.practicum.filmorate.model;
 import lombok.*;
 
 import javax.validation.constraints.*;
-import java.lang.reflect.Array;
 import java.time.LocalDate;
 import java.util.*;
 
-@Data
+@Getter
+@Setter
+@EqualsAndHashCode
+@RequiredArgsConstructor
+@AllArgsConstructor
+@NoArgsConstructor(force=true)
 @Builder
 public class Film {
 
@@ -25,17 +29,10 @@ public class Film {
     private final LocalDate releaseDate;
     @Positive
     private final Integer duration;
-    @NotNull
-    private static Integer nextId = 1;
     @EqualsAndHashCode.Exclude
     @NotNull
     private Map<String, Object> mpa;
     @EqualsAndHashCode.Exclude
 
     private List<Map<String, Object>> genres;
-
-    public void setId() {
-        this.id = nextId;
-        nextId++;
-    }
 }

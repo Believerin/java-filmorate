@@ -1,52 +1,29 @@
 package ru.yandex.practicum.filmorate.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PathVariable;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
-@Service
-@Qualifier("Secondary")
-public class UserService implements UserServing {
+public interface UserService {
 
-    private final UserStorage userStorage;
-    private final UserServing userServing;
+    Collection<User> findAll();
 
-    @Autowired
-    public UserService(@Qualifier("priority") UserStorage userStorage, @Qualifier("priority") UserServing userServing) {
-        this.userStorage = userStorage;
-        this.userServing = userServing;
-    }
+    User getUserById(@PathVariable Integer id);
 
-    public List<User> addFriend(Integer userId, Integer friendId) {
-        return userServing.addFriend(userId, friendId);
-    }
+    User createUser(User user);
 
-    public List<User> deleteFriend(Integer userId, Integer friendId) {
-        return userServing.deleteFriend(userId, friendId);
-    }
+    User updateUser(User user);
 
-    public List<User> confirmFriend(Integer userId, Integer friendId) {
-        return userServing.confirmFriend(userId, friendId);
-    }
+    List<User> addFriend(Integer userId, Integer friendId);
 
-    public Set<User> getAllFriends(Integer userId) {
-        return userServing.getAllFriends(userId);
-    }
+    List<User> deleteFriend(Integer userId, Integer friendId);
 
-    public Set<User> getCommonFriends(Integer userId, Integer otherUserId) {
-        return userServing.getCommonFriends(userId, otherUserId);
-    }
+    Set<User> getAllFriends(Integer userId);
 
-    //............................ Служебные методы ..............................................
-    private List<User> filterCoupleOfUsersWhoBecomeFriends (Integer userId, Integer friendId) {
-        return userStorage.getUsers().values().stream()
-                .filter(user -> user.getId().equals(userId) || user.getId().equals(friendId))
-                .collect(Collectors.toList());
-    }
+    List<User> confirmFriend(Integer userId, Integer friendId);
+
+    Set<User> getCommonFriends(Integer userId, Integer otherUserId);
 }

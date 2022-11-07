@@ -5,7 +5,12 @@ import lombok.*;
 import javax.validation.constraints.*;
 import java.time.LocalDate;
 
-@Data
+@Getter
+@Setter
+@EqualsAndHashCode
+@RequiredArgsConstructor
+@AllArgsConstructor
+@NoArgsConstructor(force=true)
 @Builder
 public class User {
 
@@ -23,16 +28,8 @@ public class User {
     @Past
     @NotNull
     private final LocalDate birthday;
-    @NotNull
-    private static Integer nextId = 1;
-
-    public void setId() {
-        this.id = nextId;
-        nextId++;
-    }
 
     public void setName(String name) {
         this.name = name;
     }
-
 }

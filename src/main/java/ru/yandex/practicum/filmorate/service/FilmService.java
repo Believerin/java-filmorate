@@ -1,37 +1,33 @@
 package ru.yandex.practicum.filmorate.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.model.*;
-import ru.yandex.practicum.filmorate.storage.*;
+import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.Mpa;
 
+import java.util.Collection;
 import java.util.List;
 
-@Service
-@Qualifier("Secondary")
-public class FilmService implements FilmServing {
+public interface FilmService {
 
-    private final FilmStorage filmStorage;
-    private final FilmServing filmServing;
+    Collection<Film> findAll();
 
-    @Autowired
-    public FilmService(@Qualifier("priority") FilmStorage filmStorage, @Qualifier("priority") FilmServing filmServing) {
-        this.filmStorage = filmStorage;
-        this.filmServing = filmServing;
-    }
+    Film getFilmById(Integer id);
 
-    public Film addLike (Integer filmId, Integer userId) {
-        filmServing.addLike(filmId, userId);
-        return filmStorage.getFilmById(filmId);
-    }
+    Film createFilm(Film film);
 
-    public Film deleteLike (Integer filmId, Integer userId) {
-        filmServing.deleteLike(filmId, userId);
-        return filmStorage.getFilmById(filmId);
-    }
+    Film updateFilm(Film film);
 
-    public List<Film> getMostPopularFilms(int count) {
-      return filmServing.getMostPopularFilms(count);
-    }
+    Mpa getMpa(int id);
+
+    Genre getGenre (int id);
+
+    Collection<Mpa> findAllMpa();
+
+    Collection<Genre> findAllGenres();
+
+    Film addLike (Integer filmId, Integer userId);
+
+    Film deleteLike (Integer filmId, Integer userId);
+
+    List<Film> getMostPopularFilms(int count);
 }

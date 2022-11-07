@@ -6,8 +6,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.NoSuchBodyException;
 import ru.yandex.practicum.filmorate.model.*;
-import ru.yandex.practicum.filmorate.service.FilmServing;
-import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.service.FilmService;
 
 import javax.validation.Valid;
 import java.util.Collection;
@@ -18,33 +17,31 @@ import java.util.List;
 @Slf4j
 public class FilmController {
 
-    private final FilmStorage filmStorage;
-    private final FilmServing filmServing;
+    private final FilmService filmService;
 
     @Autowired
-    public FilmController(@Qualifier("Secondary") FilmStorage filmStorage, @Qualifier("Secondary") FilmServing filmServing) {
-        this.filmStorage = filmStorage;
-        this.filmServing = filmServing;
+    public FilmController(@Qualifier("Secondary") FilmService filmService) {
+        this.filmService = filmService;
     }
 
     @GetMapping("/films")
     public Collection<Film> findAll() {
-        return filmStorage.findAll();
+        return filmService.findAll();
     }
 
     @GetMapping("/films/{id}")
     public Film getFilmById(@PathVariable Integer id) {
-        return filmStorage.getFilmById(id);
+        return filmService.getFilmById(id);
     }
 
     @PostMapping("/films")
     public Film createFilm(@Valid @RequestBody Film film) {
-        return filmStorage.createFilm(film);
+        return filmService.createFilm(film);
     }
 
     @PutMapping("/films")
     public Film updateFilm(@Valid @RequestBody Film film) {
-        return filmStorage.updateFilm(film);
+        return filmService.updateFilm(film);
     }
 
     @PutMapping("/films/{id}/like/{userId}")
@@ -53,7 +50,7 @@ public class FilmController {
             throw new NoSuchBodyException(id < 0 & userId < 0 ? "id фильма и userId пользователя"
                     : id < 0 ? "id фильма" : "userId пользователя");
         }
-        return filmServing.addLike(id, userId);
+        return filmService.addLike(id, userId);
     }
 
     @DeleteMapping("/films/{id}/like/{userId}")
@@ -62,7 +59,7 @@ public class FilmController {
             throw new NoSuchBodyException(id < 0 & userId < 0 ? "id фильма и userId пользователя"
                     : id < 0 ? "id фильма" : "userId пользователя");
         }
-        return filmServing.deleteLike(id, userId);
+        return filmService.deleteLike(id, userId);
     }
 
     @GetMapping("/films/popular")
@@ -70,7 +67,7 @@ public class FilmController {
         if (count <= 0) {
             throw new NoSuchBodyException("count");
         }
-        return filmServing.getMostPopularFilms(count);
+        return filmService.getMostPopularFilms(count);
     }
 
     @GetMapping("/mpa/{id}")
@@ -78,12 +75,12 @@ public class FilmController {
         if (id <= 0) {
             throw new NoSuchBodyException("id");
         }
-        return filmStorage.getMpa(id);
+        return filmService.getMpa(id);
     }
 
     @GetMapping("/mpa")
     public Collection<Mpa> findAllMpa() {
-        return filmStorage.findAllMpa();
+        return filmService.findAllMpa();
     }
 
     @GetMapping("/genres/{id}")
@@ -91,11 +88,11 @@ public class FilmController {
         if (id <= 0) {
             throw new NoSuchBodyException("id");
         }
-        return filmStorage.getGenre(id);
+        return filmService.getGenre(id);
     }
 
     @GetMapping("/genres")
     public Collection<Genre> findAllGenres() {
-        return filmStorage.findAllGenres();
+        return filmService.findAllGenres();
     }
 }
