@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.model;
 
 import lombok.*;
+import org.springframework.lang.Nullable;
 
 import javax.validation.constraints.*;
 import java.time.LocalDate;
@@ -33,6 +34,10 @@ public class Film {
     @NotNull
     private Map<String, Object> mpa;
     @EqualsAndHashCode.Exclude
-
     private List<Map<String, Object>> genres;
+
+    //Добавление нового поля director.
+    //Тип map, потому что, судя по примеру json, нужно вернуть "director": [{ "id": 1}]
+    @EqualsAndHashCode.Exclude
+    private Map <String, Integer> director;
 }

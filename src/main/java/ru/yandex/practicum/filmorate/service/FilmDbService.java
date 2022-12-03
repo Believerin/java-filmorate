@@ -11,10 +11,7 @@ import ru.yandex.practicum.filmorate.status.Rating;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
@@ -174,6 +171,24 @@ public class FilmDbService implements FilmService {
                 .peek(film -> film.setGenres(jdbcTemplate.query(
                         sqlFromGenreFilm, FilmDbService::mapRowToGenreFilm, film.getId())
                         )).collect(Collectors.toList());
+    }
+
+
+    /**Вывести список фильмов режиссера DIRECTOR_ID, отсортированных по количеству лайков*/
+    public Collection<Film> getFilmsByDirectorSortByLikes(int directorId) {
+        String sql = "SELECT * FROM FILM AS f " +
+                "JOIN LIKES AS l ON l.FILM_ID=f.FILM_ID " +
+                "WHERE DIRECTOR_ID = ? " +
+                "ORDER BY COUNT(l.USER_ID) DESC";
+        return jdbcTemplate.query(sql, FilmDbService::mapRowToFilm, directorId);
+    }
+
+    /**Вывести список фильмов режиссера DIRECTOR_ID, отсортированных по году выпуска*/
+    public Collection<Film> getFilmsByDirectorSortByReleaseYear(int directorId) {
+        return findAll().stream()
+                .filter(film -> film.getDirector().containsValue(directorId))
+                .sorted(Comparator.comparingInt(f -> f.getReleaseDate().getYear()))
+                .collect(Collectors.toList());
     }
 
     //............................ Служебные методы ..............................................
