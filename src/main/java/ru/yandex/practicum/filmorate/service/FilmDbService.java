@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 
 @Component
 @Qualifier("priority")
-public class FilmDbService implements FilmService {
+public class FilmDbService implements FilmService, FilmService.FilmsByDirectorFinder {
 
     private final JdbcTemplate jdbcTemplate;
 
@@ -173,8 +173,9 @@ public class FilmDbService implements FilmService {
                         )).collect(Collectors.toList());
     }
 
-
+    //------Реализация методов интерфейса FilmsByDirectorFinder
     /**Вывести список фильмов режиссера DIRECTOR_ID, отсортированных по количеству лайков*/
+    @Override
     public Collection<Film> getFilmsByDirectorSortByLikes(int directorId) {
         String sql = "SELECT * FROM FILM AS f " +
                 "JOIN LIKES AS l ON l.FILM_ID=f.FILM_ID " +
@@ -184,12 +185,14 @@ public class FilmDbService implements FilmService {
     }
 
     /**Вывести список фильмов режиссера DIRECTOR_ID, отсортированных по году выпуска*/
+    @Override
     public Collection<Film> getFilmsByDirectorSortByReleaseYear(int directorId) {
         return findAll().stream()
                 .filter(film -> film.getDirector().containsValue(directorId))
                 .sorted(Comparator.comparingInt(f -> f.getReleaseDate().getYear()))
                 .collect(Collectors.toList());
     }
+    //------Конец реализации методов интерфейса FilmsByDirectorFinder
 
     //............................ Служебные методы ..............................................
 

@@ -30,4 +30,13 @@ public interface FilmService {
     Film deleteLike (Integer filmId, Integer userId);
 
     List<Film> getMostPopularFilms(int count);
+
+    /**Вложенный интерфейс для вывода списка фильмов режиссера, отсортированного по году/лайкам*/
+    interface FilmsByDirectorFinder {
+
+        public Collection<Film> getFilmsByDirectorSortByLikes(int directorId);
+
+        public Collection<Film> getFilmsByDirectorSortByReleaseYear(int directorId);
+
+    }
 }
