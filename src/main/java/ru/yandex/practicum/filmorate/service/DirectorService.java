@@ -9,7 +9,7 @@ public interface DirectorService {
     public Collection<Director> findAllDirectors();
     public Director getDirectorById(int directorId);
     public Director addNewDirector(Director director);
-    public void updateDirector(Director director);
+    public Director updateDirector(Director director);
     public void removeDirector(int directorId);
 
 }

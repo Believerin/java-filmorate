@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 
 @Component
 @Qualifier("priority")
-public class FilmDbService implements FilmService, FilmService.FilmsByDirectorFinder {
+public class FilmDbService implements FilmService, FilmService.DirectorManager {
 
     private final JdbcTemplate jdbcTemplate;
 
@@ -173,8 +173,8 @@ public class FilmDbService implements FilmService, FilmService.FilmsByDirectorFi
                         )).collect(Collectors.toList());
     }
 
-    //------Реализация методов интерфейса FilmsByDirectorFinder
-    /**Вывести список фильмов режиссера DIRECTOR_ID, отсортированных по количеству лайков*/
+    //------Реализация методов интерфейса DirectorManager
+
     @Override
     public Collection<Film> getFilmsByDirectorSortByLikes(int directorId) {
         String sql = "SELECT * FROM FILM AS f " +
@@ -184,15 +184,33 @@ public class FilmDbService implements FilmService, FilmService.FilmsByDirectorFi
         return jdbcTemplate.query(sql, FilmDbService::mapRowToFilm, directorId);
     }
 
-    /**Вывести список фильмов режиссера DIRECTOR_ID, отсортированных по году выпуска*/
     @Override
     public Collection<Film> getFilmsByDirectorSortByReleaseYear(int directorId) {
         return findAll().stream()
-                .filter(film -> film.getDirector().containsValue(directorId))
+                .filter(film -> film.getDirectors().get(0).containsValue(directorId))
                 .sorted(Comparator.comparingInt(f -> f.getReleaseDate().getYear()))
                 .collect(Collectors.toList());
     }
-    //------Конец реализации методов интерфейса FilmsByDirectorFinder
+
+    @Override
+    public void createFilmWithDirector(Film film) {
+        Film filmWithDirector = createFilm(film);
+        filmWithDirector.setDirectors(film.getDirectors());
+    }
+
+    @Override
+    public void removeDirector(Film film) {
+        String sql = "UPDATE FILM " +
+                "SET DIRECTOR_ID = ? " +
+                "WHERE FILM_ID = ?";
+        jdbcTemplate.update(sql, film.getDirectors().get(0).get("id"), film.getId());
+    }
+
+    @Override
+    public void updateDirector(Film film) {
+
+    }
+    //------Конец реализации методов интерфейса DirectorManager
 
     //............................ Служебные методы ..............................................
 

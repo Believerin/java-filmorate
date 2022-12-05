@@ -31,12 +31,20 @@ public interface FilmService {
 
     List<Film> getMostPopularFilms(int count);
 
-    /**Вложенный интерфейс для вывода списка фильмов режиссера, отсортированного по году/лайкам*/
-    interface FilmsByDirectorFinder {
-
-        public Collection<Film> getFilmsByDirectorSortByLikes(int directorId);
-
-        public Collection<Film> getFilmsByDirectorSortByReleaseYear(int directorId);
+    /**Вложенный интерфейс для:
+     * 1) Вывода списка фильмов режиссера, отсортированного по году/лайкам
+     * 2) Добавления/удаления режиссера из фильма*/
+    interface DirectorManager {
+        /**Вывести список фильмов режиссера DIRECTOR_ID, отсортированных по количеству лайков*/
+        Collection<Film> getFilmsByDirectorSortByLikes(int directorId);
+        /**Вывести список фильмов режиссера DIRECTOR_ID, отсортированных по году выпуска*/
+        Collection<Film> getFilmsByDirectorSortByReleaseYear(int directorId);
+        /**Создать фильм с режиссером*/
+        void createFilmWithDirector(Film film);
+        /**Удалить режиссера из фильма*/
+        void removeDirector(Film film);
+        /**Обновить данные о режиссере фильма*/
+        void updateDirector(Film film);
 
     }
 }

@@ -57,9 +57,10 @@ public class DirectorDbService implements DirectorService {
     }
 
     /**Обновить данные режиссера*/
-    public void updateDirector(Director director) {
+    public Director updateDirector(Director director) {
         String sql = "UPDATE DIRECTORS SET DIRECTOR_NAME = ? WHERE DIRECTOR_ID = ?";
         jdbcTemplate.update(sql, director.getName(), director.getId());
+        return director;
     }
 
     /**Удалить режиссера по DIRECTOR_ID*/

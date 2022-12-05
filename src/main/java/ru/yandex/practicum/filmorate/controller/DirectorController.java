@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.NoSuchBodyException;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.service.DirectorService;
 
@@ -32,12 +33,19 @@ public class DirectorController {
 
     @PostMapping
     public Director createDirector(@RequestBody Director director) {
+        if (!Director.isValidDirector(director)) {
+            throw new ValidationException("id или name");
+        }
         return directorService.addNewDirector(director);
     }
 
     @PutMapping
-    public void updateDirector(@RequestBody Director director) {
-        directorService.updateDirector(director);
+    public Director updateDirector(@RequestBody Director director) {
+        Director testDirector = directorService.getDirectorById(director.getId());
+        if (testDirector == null) {
+            throw new NoSuchBodyException("director");
+        }
+        return directorService.updateDirector(director);
     }
 
     @DeleteMapping("{directorId}")
