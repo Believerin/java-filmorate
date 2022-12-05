@@ -37,5 +37,5 @@ public class Film {
 
     //Добавление нового поля director.
     @EqualsAndHashCode.Exclude
-    private List<Map <String, Integer>> directors;
+    private List<Director> directors;
 }

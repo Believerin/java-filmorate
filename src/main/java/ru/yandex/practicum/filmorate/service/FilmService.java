@@ -39,8 +39,8 @@ public interface FilmService {
         Collection<Film> getFilmsByDirectorSortByLikes(int directorId);
         /**Вывести список фильмов режиссера DIRECTOR_ID, отсортированных по году выпуска*/
         Collection<Film> getFilmsByDirectorSortByReleaseYear(int directorId);
-        /**Создать фильм с режиссером*/
-        void createFilmWithDirector(Film film);
+        /**Добавить режиссера в фильм*/
+        void addDirector(Film film);
         /**Удалить режиссера из фильма*/
         void removeDirector(Film film);
         /**Обновить данные о режиссере фильма*/

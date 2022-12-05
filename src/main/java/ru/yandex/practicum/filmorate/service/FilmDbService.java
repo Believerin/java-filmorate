@@ -19,9 +19,11 @@ import java.util.stream.Collectors;
 public class FilmDbService implements FilmService, FilmService.DirectorManager {
 
     private final JdbcTemplate jdbcTemplate;
+    private final DirectorService directorService;
 
-    public FilmDbService(JdbcTemplate jdbcTemplate) {
+    public FilmDbService(JdbcTemplate jdbcTemplate, DirectorService directorService) {
         this.jdbcTemplate = jdbcTemplate;
+        this.directorService = directorService;
     }
 
     @Override
@@ -69,6 +71,17 @@ public class FilmDbService implements FilmService, FilmService.DirectorManager {
                 .usingGeneratedKeyColumns("film_id")
                 .executeAndReturnKey(toMap(film))
                 .intValue();
+        //Проверяем наличие режиссера и добавляем. Если нет - добавляем пустой List
+        if (film.getDirectors() != null) {
+            Director director = directorService
+                    .getDirectorById(film.getDirectors().get(0).getId());
+            if (director != null) {
+                film.setDirectors(List.of(director));
+            } else {
+                film.setDirectors(List.of());
+            }
+        }
+        //Конец вставки
 
         if (film.getGenres() != null) {
 
@@ -187,15 +200,14 @@ public class FilmDbService implements FilmService, FilmService.DirectorManager {
     @Override
     public Collection<Film> getFilmsByDirectorSortByReleaseYear(int directorId) {
         return findAll().stream()
-                .filter(film -> film.getDirectors().get(0).containsValue(directorId))
+                .filter(film -> film.getDirectors().get(0).getId() == directorId)
                 .sorted(Comparator.comparingInt(f -> f.getReleaseDate().getYear()))
                 .collect(Collectors.toList());
     }
 
     @Override
-    public void createFilmWithDirector(Film film) {
-        Film filmWithDirector = createFilm(film);
-        filmWithDirector.setDirectors(film.getDirectors());
+    public void addDirector(Film film) {
+
     }
 
     @Override
@@ -203,7 +215,7 @@ public class FilmDbService implements FilmService, FilmService.DirectorManager {
         String sql = "UPDATE FILM " +
                 "SET DIRECTOR_ID = ? " +
                 "WHERE FILM_ID = ?";
-        jdbcTemplate.update(sql, film.getDirectors().get(0).get("id"), film.getId());
+        jdbcTemplate.update(sql, film.getDirectors().get(0).getId(), film.getId());
     }
 
     @Override
@@ -278,6 +290,10 @@ public class FilmDbService implements FilmService, FilmService.DirectorManager {
         values.put("duration", film.getDuration());
         if (film.getMpa() != null) {
             values.put("mpa_id", film.getMpa().get("id"));
+        }
+        //Добавление режиссера (если есть)
+        if (film.getDirectors() != null) {
+            values.put("director_id", film.getDirectors().get(0).getId());
         }
         return values;
     }
