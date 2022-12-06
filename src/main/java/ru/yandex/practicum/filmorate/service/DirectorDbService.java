@@ -131,7 +131,18 @@ public class DirectorDbService implements DirectorService {
 
     @Override
     public Collection<Film> getFilmsByDirectorSortByReleaseYear(int directorId) {
+        return getAllFilms().stream()
+                .filter(film -> film.getDirectors().equals(getDirectorsOfFilm(directorId)))
+                .sorted(Comparator.comparingInt(f -> f.getReleaseDate().getYear()))
+                .collect(Collectors.toList());
 
+    }
+
+    //__________________________________СЛУЖЕБНЫЕ МЕТОДЫ_________________________________________
+    /**Метод, аналогичный методу в FilmService.
+     *  Введен для того, чтобы избежать цикличной зависимости между DirectorService и FilmService.
+     */
+    public Collection<Film> getAllFilms() {
         String sqlFromGenreFilm = "SELECT gf.GENRE_ID, g.GENRE_NAME " +
                 "FROM GENRE_FILM AS gf " +
                 "LEFT JOIN GENRE AS g ON g.GENRE_ID = gf.GENRE_ID " +
@@ -143,19 +154,8 @@ public class DirectorDbService implements DirectorService {
                 .peek(film -> film.setGenres(jdbcTemplate.query(
                         sqlFromGenreFilm, FilmDbService::mapRowToGenreFilmGetter, film.getId())))
                 .peek(film -> film.setDirectors(getDirectorsOfFilm(film.getId())))
-                .filter(film -> film.getDirectors() == getDirectorsOfFilm(directorId))
-                .sorted(Comparator.comparingInt(f -> f.getReleaseDate().getYear()))
                 .collect(Collectors.toList());
-
-        /*String sql = "SELECT * FROM FILM AS f " +
-                "JOIN DIRECTORS_FILM AS d ON d.FILM_ID=f.FILM_ID " +
-                "JOIN MPA AS mpa ON mpa.MPA_ID = f.MPA_ID " +
-                "WHERE d.DIRECTOR_ID = ?";
-        Collection<Film> filmsByDirector = jdbcTemplate.query(sql, FilmDbService::mapRowToFilmGetter, directorId);
-        return filmsByDirector.stream()
-                .filter(film -> film.getDirectors().get(0).getId() == directorId)
-                .sorted(Comparator.comparingInt(f -> f.getReleaseDate().getYear()))
-                .collect(Collectors.toList());*/
     }
+
 
 }
