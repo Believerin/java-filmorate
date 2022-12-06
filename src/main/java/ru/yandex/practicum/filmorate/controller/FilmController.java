@@ -98,6 +98,13 @@ public class FilmController {
     public Collection<Genre> findAllGenres() {
         return filmService.findAllGenres();
     }
+    
+    @GetMapping("/films/common")
+    @ResponseBody
+    public List<Film> getCommonFilms(@RequestParam(name = "userId") int userId,
+                                     @RequestParam(name = "friendId") int friendId){
+        return filmService.getCommonFilms(userId, friendId);
+    }
 
     //------Эндпоинт для поиска фильмов режиссера по году/популярности
     @GetMapping("/films/director/{directorId}")
@@ -116,5 +123,6 @@ public class FilmController {
                 return List.of();
         }
     }
-    //----------------------------------------------------------------
+    //----------------------------------------------------------------  
+
 }
