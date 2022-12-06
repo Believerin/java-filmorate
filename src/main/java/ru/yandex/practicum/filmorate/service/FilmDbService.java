@@ -175,6 +175,23 @@ public class FilmDbService implements FilmService {
                         sqlFromGenreFilm, FilmDbService::mapRowToGenreFilm, film.getId())
                         )).collect(Collectors.toList());
     }
+    @Override
+    public List<Film> getCommonFilms(int userId, int friendId){
+        String sqlQuery = "SELECT f.*, m.* FROM FILM f " +
+                "JOIN MPA m on f.MPA_ID = m.MPA_ID " +
+                "JOIN LIKES l on f.FILM_ID = l.FILM_ID " +
+                "WHERE f.FILM_ID IN" +
+                "(SELECT DISTINCT l.FILM_ID " +
+                "FROM LIKES l " +
+                "WHERE l.USER_ID = ? " +
+                "AND l.FILM_ID IN ( " +
+                "SELECT l.FILM_ID " +
+                "FROM LIKES l " +
+                "WHERE l.USER_ID =?)) " +
+                "GROUP BY f.FILM_ID " +
+                "ORDER BY COUNT(l.USER_ID) DESC;";
+        return jdbcTemplate.query(sqlQuery, FilmDbService::mapRowToFilm, userId, friendId);
+    }
 
     //............................ Служебные методы ..............................................
 
