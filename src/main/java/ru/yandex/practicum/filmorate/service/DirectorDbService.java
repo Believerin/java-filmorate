@@ -22,8 +22,8 @@ import java.util.stream.Collectors;
 public class DirectorDbService implements DirectorService {
 
     private final JdbcTemplate jdbcTemplate;
+    private final FilmService filmService;
 
-    /**Вывести список всех режиссеров*/
     @Override
     public Collection<Director> findAllDirectors() {
         String sql = "SELECT * FROM DIRECTORS";
@@ -34,7 +34,6 @@ public class DirectorDbService implements DirectorService {
         }
     }
 
-    /**Найти режиссера по DIRECTOR_ID*/
     @Override
     public Director getDirectorById(int directorId) {
         String sql = "SELECT * FROM DIRECTORS WHERE DIRECTOR_ID = ?";
@@ -44,8 +43,18 @@ public class DirectorDbService implements DirectorService {
             return null;
         }
     }
+    @Override
+    public List<Director> getDirectorsOfFilm(int filmId) {
+        String sqlFromDirectorsFilm = "SELECT dirs.* FROM DIRECTORS AS dirs " +
+                "JOIN DIRECTORS_FILM AS df ON df.DIRECTOR_ID = dirs.DIRECTOR_ID " +
+                "WHERE df.FILM_ID = ?";
+        try {
+            return jdbcTemplate.query(sqlFromDirectorsFilm, Director::mapRowToDirector, filmId);
+        } catch (Exception e) {
+            return List.of();
+        }
+    }
 
-    /**Добавить нового режиссера*/
     @Override
     public Director addNewDirector(Director director) {
         String sql = "INSERT INTO DIRECTORS(DIRECTOR_NAME) VALUES (?)";
@@ -59,7 +68,6 @@ public class DirectorDbService implements DirectorService {
         return director;
     }
 
-    /**Обновить данные режиссера*/
     @Override
     public Director updateDirector(Director director) {
         String sql = "UPDATE DIRECTORS SET DIRECTOR_NAME = ? WHERE DIRECTOR_ID = ?";
@@ -67,14 +75,21 @@ public class DirectorDbService implements DirectorService {
         return director;
     }
 
-    /**Удалить режиссера по DIRECTOR_ID*/
     @Override
     public void removeDirector(int directorId) {
         String sql = "DELETE FROM DIRECTORS WHERE DIRECTOR_ID = ?";
         jdbcTemplate.update(sql, directorId);
     }
 
-    /**Связать режиссера и фильм в таблице DIRECTORS_FILM*/
+
+    public boolean checkAndConnectDirectorAndFilm(Film film) {
+            int directorId = film.getDirectors().get(0).getId();
+            Director director = getDirectorById(directorId);
+            if (director != null) {
+                return connectDirectorAndFilm(film.getId(), directorId);
+            }
+        return false;
+    }
     @Override
     public boolean connectDirectorAndFilm(int filmId, int directorId) {
         String sql = "INSERT INTO DIRECTORS_FILM (DIRECTOR_ID, FILM_ID) VALUES (?,?)";
@@ -86,7 +101,6 @@ public class DirectorDbService implements DirectorService {
         }
     }
 
-    /**Удалить пару режиссер/фильм из таблицы DIRECTORS_FILM*/
     @Override
     public boolean disconnectDirectorAndFilm(int filmId, int directorId) {
         String sql = "DELETE FROM DIRECTORS_FILM WHERE FILM_ID = ? AND DIRECTOR_ID = ?";
@@ -98,14 +112,21 @@ public class DirectorDbService implements DirectorService {
         }
     }
 
-/*
-    //............................ Служебные методы ..............................................
+    @Override
+    public Collection<Film> getFilmsByDirectorSortByLikes(int directorId) {
+        String sql = "SELECT * FROM FILM AS f " +
+                "JOIN LIKES AS l ON l.FILM_ID=f.FILM_ID " +
+                "WHERE DIRECTOR_ID = ? " +
+                "ORDER BY COUNT(l.USER_ID) DESC";
+        return jdbcTemplate.query(sql, FilmDbService::mapRowToFilmGetter, directorId);
+    }
 
-    public static Director mapRowToDirector(ResultSet rs, int rowNum) throws SQLException {
-        return Director.builder()
-                .id(rs.getInt("DIRECTOR_ID"))
-                .name(rs.getString("DIRECTOR_NAME"))
-                .build();
-    }*/
+    @Override
+    public Collection<Film> getFilmsByDirectorSortByReleaseYear(int directorId) {
+        return filmService.findAll().stream()
+                .filter(film -> film.getDirectors().get(0).getId() == directorId)
+                .sorted(Comparator.comparingInt(f -> f.getReleaseDate().getYear()))
+                .collect(Collectors.toList());
+    }
 
 }

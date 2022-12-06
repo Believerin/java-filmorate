@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 
 @Component
 @Qualifier("priority")
-public class FilmDbService implements FilmService, FilmService.DirectorManager {
+public class FilmDbService implements FilmService {
 
     private final JdbcTemplate jdbcTemplate;
     private final DirectorService directorService;
@@ -49,29 +49,17 @@ public class FilmDbService implements FilmService, FilmService.DirectorManager {
                 "WHERE FILM_ID = ?;";
         List<Map<String, Object>> genres =
                 jdbcTemplate.query(sqlFromGenreFilm, FilmDbService::mapRowToGenreFilm, id);
-        //Начало вставки
-        //Добавление директора
-        String sqlFromDirectorsFilm = "SELECT dirs.* FROM DIRECTORS AS dirs " +
-                "JOIN DIRECTORS_FILM AS df ON df.DIRECTOR_ID = dirs.DIRECTOR_ID " +
-                "WHERE df.FILM_ID = ?";
-        List<Director> directors;
-        try {
-            directors = jdbcTemplate.query(sqlFromDirectorsFilm, Director::mapRowToDirector, id);
-        } catch (Exception e) {
-            directors = List.of();
-        }
-        //Конец вставки
         String sql = "SELECT * " +
                 "FROM FILM AS f " +
                 "JOIN MPA AS m ON f.MPA_ID = m.MPA_ID " +
                 "WHERE FILM_ID = ?;";
-
         try {
             Film film = jdbcTemplate.queryForObject(sql, FilmDbService::mapRowToFilm, id);
             if (film != null) {
                 film.setGenres(genres);
-                //Добавление директора
-                film.setDirectors(directors);
+                //Добавление режиссера
+                film.setDirectors(directorService.getDirectorsOfFilm(id));
+                //Конец вставки
             }
             return film;
         } catch (EmptyResultDataAccessException e) {
@@ -129,6 +117,16 @@ public class FilmDbService implements FilmService, FilmService.DirectorManager {
             sqlGenreFilm.delete(sqlGenreFilm.length() - 2, sqlGenreFilm.length()).append(";");
             jdbcTemplate.update(String.valueOf(sqlGenreFilm));
         }
+        //Начало вставки
+        //Обновляем данные о режиссере фильма
+        if (film.getDirectors() != null & !film.getDirectors().isEmpty()) {
+            int directorId = film.getDirectors().get(0).getId();
+            directorService.disconnectDirectorAndFilm(film.getId(), directorId);
+            directorService.connectDirectorAndFilm(film.getId(), directorId);
+
+        }
+
+        //Конец вставки
         return doesExist ? getFilmById(film.getId()) : null;
     }
 
@@ -203,44 +201,6 @@ public class FilmDbService implements FilmService, FilmService.DirectorManager {
                         )).collect(Collectors.toList());
     }
 
-    //------Реализация методов интерфейса DirectorManager
-
-    @Override
-    public Collection<Film> getFilmsByDirectorSortByLikes(int directorId) {
-        String sql = "SELECT * FROM FILM AS f " +
-                "JOIN LIKES AS l ON l.FILM_ID=f.FILM_ID " +
-                "WHERE DIRECTOR_ID = ? " +
-                "ORDER BY COUNT(l.USER_ID) DESC";
-        return jdbcTemplate.query(sql, FilmDbService::mapRowToFilm, directorId);
-    }
-
-    @Override
-    public Collection<Film> getFilmsByDirectorSortByReleaseYear(int directorId) {
-        return findAll().stream()
-                .filter(film -> film.getDirectors().get(0).getId() == directorId)
-                .sorted(Comparator.comparingInt(f -> f.getReleaseDate().getYear()))
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public void addDirector(Film film) {
-
-    }
-
-    @Override
-    public void removeDirector(Film film) {
-        String sql = "UPDATE FILM " +
-                "SET DIRECTOR_ID = ? " +
-                "WHERE FILM_ID = ?";
-        jdbcTemplate.update(sql, film.getDirectors().get(0).getId(), film.getId());
-    }
-
-    @Override
-    public void updateDirector(Film film) {
-
-    }
-    //------Конец реализации методов интерфейса DirectorManager
-
     //............................ Служебные методы ..............................................
 
     private static Film mapRowToFilm(ResultSet resultSet, int rowNum) throws SQLException {
@@ -255,6 +215,11 @@ public class FilmDbService implements FilmService, FilmService.DirectorManager {
                 .duration(resultSet.getInt("duration"))
                 .mpa(m)
                 .build();
+    }
+
+    /**Геттер для метода mapRowToFilm*/
+    public static Film mapRowToFilmGetter(ResultSet resultSet, int rowNum) throws SQLException {
+        return mapRowToFilm(resultSet, rowNum);
     }
 
     private static Map<String, Object> mapRowToGenreFilm(ResultSet resultSet, int rowNum) throws SQLException {

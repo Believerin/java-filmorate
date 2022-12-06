@@ -102,7 +102,6 @@ public class FilmController {
     //------Эндпоинт для поиска фильмов режиссера по году/популярности
     @GetMapping("/films/director/{directorId}?sortBy=[year,likes]")
     public Collection<Film> getDirectorFilmsSortByYearOrLikes(@PathVariable int directorId, @RequestParam String sortBy)  {
-        FilmService.DirectorManager directorExtension = (FilmService.DirectorManager) filmService;
         if (directorService.getDirectorById(directorId) == null) {
             throw new NoSuchBodyException("id");
         } else if (!sortBy.equals("year") & !sortBy.equals("likes")) {
@@ -110,9 +109,9 @@ public class FilmController {
         }
         switch (sortBy) {
             case "year":
-                return directorExtension.getFilmsByDirectorSortByReleaseYear(directorId);
+                return directorService.getFilmsByDirectorSortByReleaseYear(directorId);
             case "likes":
-                return directorExtension.getFilmsByDirectorSortByLikes(directorId);
+                return directorService.getFilmsByDirectorSortByLikes(directorId);
             default:
                 return List.of();
         }
