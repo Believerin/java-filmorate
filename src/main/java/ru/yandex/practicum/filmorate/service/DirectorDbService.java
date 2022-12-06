@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -10,12 +11,8 @@ import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.sql.PreparedStatement;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 @Service
@@ -123,8 +120,25 @@ public class DirectorDbService implements DirectorService {
 
     @Override
     public Collection<Film> getFilmsByDirectorSortByLikes(int directorId) {
-
-
+        String sql = "SELECT FILM_ID FROM LIKES " +
+                "GROUP BY FILM_ID " +
+                "ORDER BY COUNT(USER_ID) DESC";
+        List<Integer> filmsId = jdbcTemplate.queryForList(sql, Integer.TYPE);
+        List<Film> filmsSortedByLikes = new ArrayList<>();
+        if (filmsId.isEmpty()) {
+            return getAllFilmsByDirector(directorId).stream()
+                    .sorted(Comparator.comparingInt(Film::getId))
+                    .collect(Collectors.toList());
+        } else {
+            for (Integer i : filmsId) {
+                if (!getDirectorsOfFilm(i).isEmpty()) {
+                    if (getDirectorsOfFilm(i).get(0).getId() == directorId) {
+                        filmsSortedByLikes.add(getFilm(i));
+                    }
+                }
+            }
+        }
+        return filmsSortedByLikes;
     }
 
     @Override
@@ -132,14 +146,13 @@ public class DirectorDbService implements DirectorService {
         return getAllFilmsByDirector(directorId).stream()
                 .sorted(Comparator.comparingInt(f -> f.getReleaseDate().getYear()))
                 .collect(Collectors.toList());
-
     }
 
     //__________________________________СЛУЖЕБНЫЕ МЕТОДЫ_________________________________________
     /**Метод, аналогичный методу в FilmService.
      *  Введен для того, чтобы избежать цикличной зависимости между DirectorService и FilmService.
      */
-    public Collection<Film> getAllFilmsByDirector(int directorId) {
+    private Collection<Film> getAllFilmsByDirector(int directorId) {
         String sqlFromGenreFilm = "SELECT gf.GENRE_ID, g.GENRE_NAME " +
                 "FROM GENRE_FILM AS gf " +
                 "LEFT JOIN GENRE AS g ON g.GENRE_ID = gf.GENRE_ID " +
@@ -153,6 +166,31 @@ public class DirectorDbService implements DirectorService {
                 .peek(film -> film.setDirectors(getDirectorsOfFilm(film.getId())))
                 .filter(film -> film.getDirectors().equals(getDirectorsOfFilm(directorId)))
                 .collect(Collectors.toList());
+    }
+    /**Метод, аналогичный методу в FilmService.
+     *  Введен для того, чтобы избежать цикличной зависимости между DirectorService и FilmService.
+     */
+    private Film getFilm(int filmId) {
+        String sqlFromGenreFilm = "SELECT gf.GENRE_ID, g.GENRE_NAME " +
+                "FROM GENRE_FILM AS gf " +
+                "LEFT JOIN GENRE AS g ON g.GENRE_ID = gf.GENRE_ID " +
+                "WHERE FILM_ID = ?;";
+        List<Map<String, Object>> genres =
+                jdbcTemplate.query(sqlFromGenreFilm, FilmDbService::mapRowToGenreFilmGetter, filmId);
+        String sql = "SELECT * " +
+                "FROM FILM AS f " +
+                "JOIN MPA AS m ON f.MPA_ID = m.MPA_ID " +
+                "WHERE FILM_ID = ?;";
+        try {
+            Film film = jdbcTemplate.queryForObject(sql, FilmDbService::mapRowToFilmGetter, filmId);
+            if (film != null) {
+                film.setGenres(genres);
+                film.setDirectors(getDirectorsOfFilm(filmId));
+            }
+            return film;
+        } catch (EmptyResultDataAccessException e) {
+            return null;
+        }
     }
 
 }
