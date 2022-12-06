@@ -15,6 +15,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 @Service
@@ -122,17 +123,13 @@ public class DirectorDbService implements DirectorService {
 
     @Override
     public Collection<Film> getFilmsByDirectorSortByLikes(int directorId) {
-        String sql = "SELECT * FROM FILM AS f " +
-                "JOIN LIKES AS l ON l.FILM_ID=f.FILM_ID " +
-                "WHERE DIRECTOR_ID = ? " +
-                "ORDER BY COUNT(l.USER_ID) DESC";
-        return jdbcTemplate.query(sql, FilmDbService::mapRowToFilmGetter, directorId);
+
+
     }
 
     @Override
     public Collection<Film> getFilmsByDirectorSortByReleaseYear(int directorId) {
-        return getAllFilms().stream()
-                .filter(film -> film.getDirectors().equals(getDirectorsOfFilm(directorId)))
+        return getAllFilmsByDirector(directorId).stream()
                 .sorted(Comparator.comparingInt(f -> f.getReleaseDate().getYear()))
                 .collect(Collectors.toList());
 
@@ -142,7 +139,7 @@ public class DirectorDbService implements DirectorService {
     /**Метод, аналогичный методу в FilmService.
      *  Введен для того, чтобы избежать цикличной зависимости между DirectorService и FilmService.
      */
-    public Collection<Film> getAllFilms() {
+    public Collection<Film> getAllFilmsByDirector(int directorId) {
         String sqlFromGenreFilm = "SELECT gf.GENRE_ID, g.GENRE_NAME " +
                 "FROM GENRE_FILM AS gf " +
                 "LEFT JOIN GENRE AS g ON g.GENRE_ID = gf.GENRE_ID " +
@@ -154,8 +151,8 @@ public class DirectorDbService implements DirectorService {
                 .peek(film -> film.setGenres(jdbcTemplate.query(
                         sqlFromGenreFilm, FilmDbService::mapRowToGenreFilmGetter, film.getId())))
                 .peek(film -> film.setDirectors(getDirectorsOfFilm(film.getId())))
+                .filter(film -> film.getDirectors().equals(getDirectorsOfFilm(directorId)))
                 .collect(Collectors.toList());
     }
-
 
 }

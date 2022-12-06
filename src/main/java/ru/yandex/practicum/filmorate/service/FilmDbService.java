@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -212,15 +213,6 @@ public class FilmDbService implements FilmService {
                 .build();
     }
 
-    /**Геттер для метода mapRowToFilm*/
-    public static Film mapRowToFilmGetter(ResultSet resultSet, int rowNum) throws SQLException {
-        return mapRowToFilm(resultSet, rowNum);
-    }
-    /**Геттер для метода mapRowToGenreFilm*/
-    public static Map<String, Object> mapRowToGenreFilmGetter(ResultSet resultSet, int rowNum) throws SQLException {
-        return mapRowToGenreFilm(resultSet, rowNum);
-    }
-
     private static Map<String, Object> mapRowToGenreFilm(ResultSet resultSet, int rowNum) throws SQLException {
         Map<String, Object> o = new HashMap<>();
         o.put("id", resultSet.getInt("genre_id"));
@@ -274,4 +266,14 @@ public class FilmDbService implements FilmService {
         }
         return values;
     }
+
+    /**Геттер для метода mapRowToFilm*/
+    public static Film mapRowToFilmGetter(ResultSet resultSet, int rowNum) throws SQLException {
+        return mapRowToFilm(resultSet, rowNum);
+    }
+    /**Геттер для метода mapRowToGenreFilm*/
+    public static Map<String, Object> mapRowToGenreFilmGetter(ResultSet resultSet, int rowNum) throws SQLException {
+        return mapRowToGenreFilm(resultSet, rowNum);
+    }
+
 }
