@@ -30,4 +30,5 @@ public interface FilmService {
     Film deleteLike (Integer filmId, Integer userId);
 
     List<Film> getMostPopularFilms(int count);
+    List<Film> getCommonFilms(int userId, int friendId);
 }
