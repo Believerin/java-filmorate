@@ -216,6 +216,10 @@ public class FilmDbService implements FilmService {
     public static Film mapRowToFilmGetter(ResultSet resultSet, int rowNum) throws SQLException {
         return mapRowToFilm(resultSet, rowNum);
     }
+    /**Геттер для метода mapRowToGenreFilm*/
+    public static Map<String, Object> mapRowToGenreFilmGetter(ResultSet resultSet, int rowNum) throws SQLException {
+        return mapRowToGenreFilm(resultSet, rowNum);
+    }
 
     private static Map<String, Object> mapRowToGenreFilm(ResultSet resultSet, int rowNum) throws SQLException {
         Map<String, Object> o = new HashMap<>();

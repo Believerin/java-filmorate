@@ -100,7 +100,7 @@ public class FilmController {
     }
 
     //------Эндпоинт для поиска фильмов режиссера по году/популярности
-    @GetMapping("/films/director/{directorId}?sortBy=[year,likes]")
+    @GetMapping("/films/director/{directorId}")
     public Collection<Film> getDirectorFilmsSortByYearOrLikes(@PathVariable int directorId, @RequestParam String sortBy)  {
         if (directorService.getDirectorById(directorId) == null) {
             throw new NoSuchBodyException("id");
