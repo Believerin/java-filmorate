@@ -30,4 +30,6 @@ public interface FilmService {
 
     List<Film> getMostPopularFilms(int count);
 
+    List<Film> getCommonFilms(int userId, int friendId);
+
 }
