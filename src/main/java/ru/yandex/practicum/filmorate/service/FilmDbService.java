@@ -49,13 +49,30 @@ public class FilmDbService implements FilmService, FilmService.DirectorManager {
                 "WHERE FILM_ID = ?;";
         List<Map<String, Object>> genres =
                 jdbcTemplate.query(sqlFromGenreFilm, FilmDbService::mapRowToGenreFilm, id);
+        //Начало вставки
+        //Добавление директора
+        String sqlFromDirectorsFilm = "SELECT dirs.* FROM DIRECTORS AS dirs " +
+                "JOIN DIRECTORS_FILM AS df ON df.DIRECTOR_ID = dirs.DIRECTOR_ID " +
+                "WHERE df.FILM_ID = ?";
+        List<Director> directors;
+        try {
+            directors = jdbcTemplate.query(sqlFromDirectorsFilm, Director::mapRowToDirector, id);
+        } catch (Exception e) {
+            directors = List.of();
+        }
+        //Конец вставки
         String sql = "SELECT * " +
                 "FROM FILM AS f " +
                 "JOIN MPA AS m ON f.MPA_ID = m.MPA_ID " +
                 "WHERE FILM_ID = ?;";
+
         try {
             Film film = jdbcTemplate.queryForObject(sql, FilmDbService::mapRowToFilm, id);
-            if (film != null) film.setGenres(genres);
+            if (film != null) {
+                film.setGenres(genres);
+                //Добавление директора
+                film.setDirectors(directors);
+            }
             return film;
         } catch (EmptyResultDataAccessException e) {
             return null;
@@ -71,14 +88,14 @@ public class FilmDbService implements FilmService, FilmService.DirectorManager {
                 .usingGeneratedKeyColumns("film_id")
                 .executeAndReturnKey(toMap(film))
                 .intValue();
-        //Проверяем наличие режиссера и добавляем. Если нет - добавляем пустой List
+        //Начало вставки
+        //Проверяем наличие режиссера и добавляем
         if (film.getDirectors() != null) {
+            int directorId = film.getDirectors().get(0).getId();
             Director director = directorService
-                    .getDirectorById(film.getDirectors().get(0).getId());
+                    .getDirectorById(directorId);
             if (director != null) {
-                film.setDirectors(List.of(director));
-            } else {
-                film.setDirectors(List.of());
+                directorService.connectDirectorAndFilm(film_id, directorId);
             }
         }
         //Конец вставки

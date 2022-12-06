@@ -6,10 +6,12 @@ import java.util.Collection;
 
 public interface DirectorService {
 
-    public Collection<Director> findAllDirectors();
-    public Director getDirectorById(int directorId);
-    public Director addNewDirector(Director director);
-    public Director updateDirector(Director director);
-    public void removeDirector(int directorId);
+    Collection<Director> findAllDirectors();
+    Director getDirectorById(int directorId);
+    Director addNewDirector(Director director);
+    Director updateDirector(Director director);
+    void removeDirector(int directorId);
+    boolean connectDirectorAndFilm(int filmId, int directorId);
+    boolean disconnectDirectorAndFilm(int filmId, int directorId);
 
 }
