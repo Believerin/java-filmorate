@@ -75,15 +75,19 @@ public class DirectorDbService implements DirectorService {
     @Override
     public void updateDirectorInFilm(Film film) {
         int filmId = film.getId();
-        Optional<List<Director>> previousDirector = Optional.of(getDirectorsOfFilm(filmId));
-        Optional<List<Director>> newDirector = Optional.of(film.getDirectors());
+        Optional<List<Director>> previousDirector = Optional.ofNullable(getDirectorsOfFilm(filmId));
+        Optional<List<Director>> newDirector = Optional.ofNullable(film.getDirectors());
 
-        if (!previousDirector.get().isEmpty()) {
-            disconnectFilmAndDirector(filmId, previousDirector.get().get(0).getId());
+        if (previousDirector.isPresent()) {
+            if (!previousDirector.get().isEmpty()) {
+                disconnectFilmAndDirector(filmId, previousDirector.get().get(0).getId());
+            }
         }
 
-        if (!newDirector.get().isEmpty()) {
-            connectFilmAndDirector(filmId, newDirector.get().get(0).getId());
+        if (newDirector.isPresent()) {
+            if (!newDirector.get().isEmpty()) {
+                connectFilmAndDirector(filmId, newDirector.get().get(0).getId());
+            }
         }
 
     }

@@ -37,8 +37,9 @@ public class FilmDbService implements FilmService {
                 "JOIN MPA AS m ON f.MPA_ID = m.MPA_ID;";
         return jdbcTemplate.query(sql, FilmDbService::mapRowToFilm).stream()
                 .peek(film -> film.setGenres(jdbcTemplate.query(
-                        sqlFromGenreFilm, FilmDbService::mapRowToGenreFilm, film.getId()))
-                ).collect(Collectors.toList());
+                        sqlFromGenreFilm, FilmDbService::mapRowToGenreFilm, film.getId())))
+                .peek(film -> film.setDirectors(directorService.getDirectorsOfFilm(film.getId())))
+                .collect(Collectors.toList());
     }
 
     @Override
