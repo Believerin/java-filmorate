@@ -10,19 +10,16 @@ import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
-@Service
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
+@Service
 public class DirectorDbService implements DirectorService {
-
     private final JdbcTemplate jdbcTemplate;
-    private final FilmService filmService;
 
     @Override
     public Collection<Director> findAllDirectors() {
@@ -43,6 +40,7 @@ public class DirectorDbService implements DirectorService {
             return null;
         }
     }
+
     @Override
     public List<Director> getDirectorsOfFilm(int filmId) {
         String sqlFromDirectorsFilm = "SELECT dirs.* FROM DIRECTORS AS dirs " +
@@ -74,6 +72,21 @@ public class DirectorDbService implements DirectorService {
         jdbcTemplate.update(sql, director.getName(), director.getId());
         return director;
     }
+    @Override
+    public void updateDirectorInFilm(Film film) {
+        int filmId = film.getId();
+        Optional<List<Director>> previousDirector = Optional.of(getDirectorsOfFilm(filmId));
+        Optional<List<Director>> newDirector = Optional.of(film.getDirectors());
+
+        if (!previousDirector.get().isEmpty()) {
+            disconnectFilmAndDirector(filmId, previousDirector.get().get(0).getId());
+        }
+
+        if (!newDirector.get().isEmpty()) {
+            connectFilmAndDirector(filmId, newDirector.get().get(0).getId());
+        }
+
+    }
 
     @Override
     public void removeDirector(int directorId) {
@@ -81,17 +94,8 @@ public class DirectorDbService implements DirectorService {
         jdbcTemplate.update(sql, directorId);
     }
 
-
-    public boolean checkAndConnectDirectorAndFilm(Film film) {
-            int directorId = film.getDirectors().get(0).getId();
-            Director director = getDirectorById(directorId);
-            if (director != null) {
-                return connectDirectorAndFilm(film.getId(), directorId);
-            }
-        return false;
-    }
     @Override
-    public boolean connectDirectorAndFilm(int filmId, int directorId) {
+    public boolean connectFilmAndDirector(int filmId, int directorId) {
         String sql = "INSERT INTO DIRECTORS_FILM (DIRECTOR_ID, FILM_ID) VALUES (?,?)";
         try {
             jdbcTemplate.update(sql, directorId, filmId);
@@ -102,7 +106,7 @@ public class DirectorDbService implements DirectorService {
     }
 
     @Override
-    public boolean disconnectDirectorAndFilm(int filmId, int directorId) {
+    public boolean disconnectFilmAndDirector(int filmId, int directorId) {
         String sql = "DELETE FROM DIRECTORS_FILM WHERE FILM_ID = ? AND DIRECTOR_ID = ?";
         try {
             jdbcTemplate.update(sql, directorId, filmId);
@@ -123,7 +127,11 @@ public class DirectorDbService implements DirectorService {
 
     @Override
     public Collection<Film> getFilmsByDirectorSortByReleaseYear(int directorId) {
-        return filmService.findAll().stream()
+        String sql = "SELECT * FROM FILM AS f " +
+                "JOIN DIRECTORS_FILM AS d ON d.FILM_ID=f.FILM_ID " +
+                "WHERE DIRECTOR_ID = ?";
+        Collection<Film> filmsByDirector = jdbcTemplate.query(sql, FilmDbService::mapRowToFilmGetter, directorId);
+        return filmsByDirector.stream()
                 .filter(film -> film.getDirectors().get(0).getId() == directorId)
                 .sorted(Comparator.comparingInt(f -> f.getReleaseDate().getYear()))
                 .collect(Collectors.toList());

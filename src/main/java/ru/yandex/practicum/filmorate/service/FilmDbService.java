@@ -83,7 +83,7 @@ public class FilmDbService implements FilmService {
             Director director = directorService
                     .getDirectorById(directorId);
             if (director != null) {
-                directorService.connectDirectorAndFilm(film_id, directorId);
+                directorService.connectFilmAndDirector(film_id, directorId);
             }
         }
         //Конец вставки
@@ -119,13 +119,7 @@ public class FilmDbService implements FilmService {
         }
         //Начало вставки
         //Обновляем данные о режиссере фильма
-        if (film.getDirectors() != null & !film.getDirectors().isEmpty()) {
-            int directorId = film.getDirectors().get(0).getId();
-            directorService.disconnectDirectorAndFilm(film.getId(), directorId);
-            directorService.connectDirectorAndFilm(film.getId(), directorId);
-
-        }
-
+        directorService.updateDirectorInFilm(film);
         //Конец вставки
         return doesExist ? getFilmById(film.getId()) : null;
     }
@@ -272,10 +266,6 @@ public class FilmDbService implements FilmService {
         values.put("duration", film.getDuration());
         if (film.getMpa() != null) {
             values.put("mpa_id", film.getMpa().get("id"));
-        }
-        //Добавление режиссера (если есть)
-        if (film.getDirectors() != null) {
-            values.put("director_id", film.getDirectors().get(0).getId());
         }
         return values;
     }

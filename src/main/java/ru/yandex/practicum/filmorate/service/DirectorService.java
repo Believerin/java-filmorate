@@ -17,12 +17,14 @@ public interface DirectorService {
     Director addNewDirector(Director director);
     /**Обновить данные режиссера*/
     Director updateDirector(Director director);
+    /**Обновить информацию в таблице DIRECTORS_FILM*/
+    void updateDirectorInFilm(Film film);
     /**Удалить режиссера по DIRECTOR_ID*/
     void removeDirector(int directorId);
     /**Связать режиссера и фильм в таблице DIRECTORS_FILM*/
-    boolean connectDirectorAndFilm(int filmId, int directorId);
+    boolean connectFilmAndDirector(int filmId, int directorId);
     /**Удалить пару режиссер/фильм из таблицы DIRECTORS_FILM*/
-    boolean disconnectDirectorAndFilm(int filmId, int directorId);
+    boolean disconnectFilmAndDirector(int filmId, int directorId);
     /**Вывести список фильмов режиссера DIRECTOR_ID, отсортированных по количеству лайков*/
     Collection<Film> getFilmsByDirectorSortByLikes(int directorId);
     /**Вывести список фильмов режиссера DIRECTOR_ID, отсортированных по году выпуска*/
