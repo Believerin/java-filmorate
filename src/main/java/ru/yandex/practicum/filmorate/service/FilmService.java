@@ -1,10 +1,12 @@
 package ru.yandex.practicum.filmorate.service;
+
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 public interface FilmService {
 
@@ -18,18 +20,22 @@ public interface FilmService {
 
     Mpa getMpa(int id);
 
-    Genre getGenre (int id);
+    Genre getGenre(int id);
 
     Collection<Mpa> findAllMpa();
 
     Collection<Genre> findAllGenres();
 
-    Film addLike (Integer filmId, Integer userId);
+    Film addLike(Integer filmId, Integer userId);
 
-    Film deleteLike (Integer filmId, Integer userId);
+    Film deleteLike(Integer filmId, Integer userId);
 
     List<Film> getMostPopularFilms(int count);
 
     List<Film> getCommonFilms(int userId, int friendId);
+
+    /*Эндпоинт для удаления пользователей*/
+    public Film delete(Integer filmId);
+    /*Эндпоинт для удаления пользователей*/
 
 }

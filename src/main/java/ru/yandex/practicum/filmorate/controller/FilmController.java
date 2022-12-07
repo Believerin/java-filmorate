@@ -3,6 +3,8 @@ package ru.yandex.practicum.filmorate.controller;
 import lombok.extern.slf4j.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.NoSuchBodyException;
 import ru.yandex.practicum.filmorate.model.*;
@@ -12,6 +14,7 @@ import ru.yandex.practicum.filmorate.service.FilmService;
 import javax.validation.Valid;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping
@@ -48,7 +51,7 @@ public class FilmController {
     }
 
     @PutMapping("/films/{id}/like/{userId}")
-    public Film addLike (@PathVariable Integer id, @PathVariable Integer userId) {
+    public Film addLike(@PathVariable Integer id, @PathVariable Integer userId) {
         if (id <= 0 || userId <= 0) {
             throw new NoSuchBodyException(id < 0 & userId < 0 ? "id фильма и userId пользователя"
                     : id < 0 ? "id фильма" : "userId пользователя");
@@ -57,7 +60,7 @@ public class FilmController {
     }
 
     @DeleteMapping("/films/{id}/like/{userId}")
-    public Film deleteLike (@PathVariable Integer id, @PathVariable Integer userId) {
+    public Film deleteLike(@PathVariable Integer id, @PathVariable Integer userId) {
         if (id <= 0 || userId <= 0) {
             throw new NoSuchBodyException(id < 0 & userId < 0 ? "id фильма и userId пользователя"
                     : id < 0 ? "id фильма" : "userId пользователя");
@@ -66,7 +69,7 @@ public class FilmController {
     }
 
     @GetMapping("/films/popular")
-    public List<Film> getMostPopularFilms (@RequestParam(defaultValue = "10") int count) {
+    public List<Film> getMostPopularFilms(@RequestParam(defaultValue = "10") int count) {
         if (count <= 0) {
             throw new NoSuchBodyException("count");
         }
@@ -74,7 +77,7 @@ public class FilmController {
     }
 
     @GetMapping("/mpa/{id}")
-    public Mpa getMpa (@PathVariable Integer id) {
+    public Mpa getMpa(@PathVariable Integer id) {
         if (id <= 0) {
             throw new NoSuchBodyException("id");
         }
@@ -87,7 +90,7 @@ public class FilmController {
     }
 
     @GetMapping("/genres/{id}")
-    public Genre getGenre (@PathVariable Integer id) {
+    public Genre getGenre(@PathVariable Integer id) {
         if (id <= 0) {
             throw new NoSuchBodyException("id");
         }
@@ -98,17 +101,22 @@ public class FilmController {
     public Collection<Genre> findAllGenres() {
         return filmService.findAllGenres();
     }
-    
+
     @GetMapping("/films/common")
     @ResponseBody
     public List<Film> getCommonFilms(@RequestParam(name = "userId") int userId,
-                                     @RequestParam(name = "friendId") int friendId){
+                                     @RequestParam(name = "friendId") int friendId) {
         return filmService.getCommonFilms(userId, friendId);
+    }
+
+    @DeleteMapping("/films/{filmId}")
+    public Film delete(@PathVariable Integer filmId) {
+        return filmService.delete(filmId);
     }
 
     //------Эндпоинт для поиска фильмов режиссера по году/популярности
     @GetMapping("/films/director/{directorId}")
-    public Collection<Film> getDirectorFilmsSortByYearOrLikes(@PathVariable int directorId, @RequestParam String sortBy)  {
+    public Collection<Film> getDirectorFilmsSortByYearOrLikes(@PathVariable int directorId, @RequestParam String sortBy) {
         if (directorService.getDirectorById(directorId) == null) {
             throw new NoSuchBodyException("id");
         } else if (!sortBy.equals("year") & !sortBy.equals("likes")) {
