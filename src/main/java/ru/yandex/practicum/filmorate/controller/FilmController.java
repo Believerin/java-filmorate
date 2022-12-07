@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.NoSuchBodyException;
 import ru.yandex.practicum.filmorate.model.*;
+import ru.yandex.practicum.filmorate.service.DirectorService;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import javax.validation.Valid;
@@ -18,10 +19,12 @@ import java.util.List;
 public class FilmController {
 
     private final FilmService filmService;
+    private final DirectorService directorService;
 
     @Autowired
-    public FilmController(@Qualifier("Secondary") FilmService filmService) {
+    public FilmController(@Qualifier("Secondary") FilmService filmService, DirectorService directorService) {
         this.filmService = filmService;
+        this.directorService = directorService;
     }
 
     @GetMapping("/films")
@@ -95,11 +98,31 @@ public class FilmController {
     public Collection<Genre> findAllGenres() {
         return filmService.findAllGenres();
     }
-
+    
     @GetMapping("/films/common")
     @ResponseBody
     public List<Film> getCommonFilms(@RequestParam(name = "userId") int userId,
                                      @RequestParam(name = "friendId") int friendId){
         return filmService.getCommonFilms(userId, friendId);
     }
+
+    //------Эндпоинт для поиска фильмов режиссера по году/популярности
+    @GetMapping("/films/director/{directorId}")
+    public Collection<Film> getDirectorFilmsSortByYearOrLikes(@PathVariable int directorId, @RequestParam String sortBy)  {
+        if (directorService.getDirectorById(directorId) == null) {
+            throw new NoSuchBodyException("id");
+        } else if (!sortBy.equals("year") & !sortBy.equals("likes")) {
+            throw new NoSuchBodyException("sortBy");
+        }
+        switch (sortBy) {
+            case "year":
+                return directorService.getFilmsByDirectorSortByReleaseYear(directorId);
+            case "likes":
+                return directorService.getFilmsByDirectorSortByLikes(directorId);
+            default:
+                return List.of();
+        }
+    }
+    //----------------------------------------------------------------  
+
 }
