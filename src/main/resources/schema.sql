@@ -37,3 +37,30 @@ CREATE TABLE IF NOT EXISTS genre_film (
     genre_id int REFERENCES genre (genre_id),
     CONSTRAINT genre_film_pk PRIMARY KEY (film_id, genre_id)
 );
+
+
+
+CREATE TABLE IF NOT EXISTS reviews
+(
+    review_id   int PRIMARY KEY AUTO_INCREMENT NOT NULL,
+    user_id     int                            NOT NULL,
+    film_id     int                            NOT NULL,
+    content     varchar(200),
+    useful      int,
+    is_positive boolean,
+
+    UNIQUE (user_id, film_id),
+    FOREIGN KEY (film_id) REFERENCES film (film_id),
+    FOREIGN KEY (user_id) REFERENCES film_user (user_id)
+);
+
+
+CREATE TABLE IF NOT EXISTS users_reviews_like_dislike
+(
+    user_id      int NOT NULL,
+    review_id int NOT NULL,
+    isLike boolean,
+    FOREIGN KEY (user_id) REFERENCES film_user (user_id),
+    FOREIGN KEY (review_id) REFERENCES reviews (review_id),
+    UNIQUE (user_id, review_id)
+);
