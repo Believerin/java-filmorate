@@ -25,17 +25,4 @@ public class Director implements Serializable {
     @NotNull(message = "name can't be null")
     private String name;
 
-    /**Валидатор данных тела запроса для контроллера*/
-    public static boolean isValidDirector(Director director) {
-        return !director.getName().isEmpty() &
-                !director.getName().isBlank() &
-                director.getId() > 0;
-    }
-    /**Метод для отображения строк. Передается в методы JdbcTemplate*/
-    public static Director mapRowToDirector(ResultSet rs, int rowNum) throws SQLException {
-        return Director.builder()
-                .id(rs.getInt("DIRECTOR_ID"))
-                .name(rs.getString("DIRECTOR_NAME"))
-                .build();
-    }
 }

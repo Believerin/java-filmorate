@@ -33,7 +33,7 @@ public class DirectorController {
 
     @PostMapping
     public Director createDirector(@RequestBody Director director) {
-        if (!Director.isValidDirector(director)) {
+        if (!isValidDirector(director)) {
             throw new ValidationException("id или name");
         }
         return directorService.addNewDirector(director);
@@ -51,6 +51,16 @@ public class DirectorController {
     @DeleteMapping("{directorId}")
     public void deleteDirector(@PathVariable int directorId){
         directorService.removeDirector(directorId);
+    }
+
+
+    //__________________________________СЛУЖЕБНЫЕ МЕТОДЫ_________________________________________
+
+    /**Валидатор данных тела запроса для контроллера*/
+    public static boolean isValidDirector(Director director) {
+        return !director.getName().isEmpty() &
+                !director.getName().isBlank() &
+                director.getId() > 0;
     }
 
 }

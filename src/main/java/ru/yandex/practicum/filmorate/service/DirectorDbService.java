@@ -11,6 +11,8 @@ import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -23,7 +25,7 @@ public class DirectorDbService implements DirectorService {
     public Collection<Director> findAllDirectors() {
         String sql = "SELECT * FROM DIRECTORS";
         try {
-            return jdbcTemplate.query(sql, Director::mapRowToDirector);
+            return jdbcTemplate.query(sql, DirectorDbService::mapRowToDirector);
         } catch (Exception e) {
             return List.of();
         }
@@ -33,7 +35,7 @@ public class DirectorDbService implements DirectorService {
     public Director getDirectorById(int directorId) {
         String sql = "SELECT * FROM DIRECTORS WHERE DIRECTOR_ID = ?";
         try {
-            return jdbcTemplate.queryForObject(sql, Director::mapRowToDirector, directorId);
+            return jdbcTemplate.queryForObject(sql, DirectorDbService::mapRowToDirector, directorId);
         } catch (Exception e) {
             return null;
         }
@@ -45,7 +47,7 @@ public class DirectorDbService implements DirectorService {
                 "JOIN DIRECTORS_FILM AS df ON df.DIRECTOR_ID = dirs.DIRECTOR_ID " +
                 "WHERE df.FILM_ID = ?";
         try {
-            return jdbcTemplate.query(sqlFromDirectorsFilm, Director::mapRowToDirector, filmId);
+            return jdbcTemplate.query(sqlFromDirectorsFilm, DirectorDbService::mapRowToDirector, filmId);
         } catch (Exception e) {
             return List.of();
         }
@@ -191,6 +193,14 @@ public class DirectorDbService implements DirectorService {
         } catch (EmptyResultDataAccessException e) {
             return null;
         }
+    }
+
+    /**Метод для отображения строк. Передается в методы JdbcTemplate*/
+    public static Director mapRowToDirector(ResultSet rs, int rowNum) throws SQLException {
+        return Director.builder()
+                .id(rs.getInt("DIRECTOR_ID"))
+                .name(rs.getString("DIRECTOR_NAME"))
+                .build();
     }
 
 }
