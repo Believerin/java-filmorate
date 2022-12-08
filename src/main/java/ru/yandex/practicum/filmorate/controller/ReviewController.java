@@ -5,12 +5,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import ru.yandex.practicum.filmorate.model.Review;
+import ru.yandex.practicum.filmorate.model.ReviewLikeDislike;
 import ru.yandex.practicum.filmorate.service.ReviewService;
 
 import javax.validation.Valid;
@@ -38,38 +41,38 @@ public class ReviewController {
     }
 
     @DeleteMapping("/reviews/{id}")
-    public Review deleteReview(int id) {
+    public Review deleteReview(@PathVariable int id) {
         return reviewService.deleteReview(id);
     }
 
     @GetMapping("/reviews/{id}")
-    public Review getReview(int id) {
+    public Review getReview(@PathVariable int id) {
         return reviewService.getReview(id);
     }
 
-    @GetMapping("/reviews?filmId={filmId}&count={count}")
+    @GetMapping("/reviews")
     //Получение всех отзывов по идентификатору фильма, если фильм не указан то все. Если кол-во не указано то 10.
-    public List<Review> getReviewList(int id, int count) {
-        return reviewService.getReviewList(id, count);
+    public List<Review> getReviewList(@RequestParam int filmId, @RequestParam(defaultValue = "10") int count) {
+        return reviewService.getReviewList(filmId, count);
     }
 
     @PutMapping("/reviews/{id}/like/{userId}")
-    public Review putLikeOnReview(int id, int userId) {
+    public ReviewLikeDislike putLikeOnReview(@PathVariable int id, @PathVariable int userId) {
         return reviewService.putLikeOnReview(id, userId);
     }
 
     @PutMapping("/reviews/{id}/dislike/{userId}")
-    public Review putDislikeOnReview(int id, int userId) {
+    public ReviewLikeDislike putDislikeOnReview(@PathVariable int id, @PathVariable int userId) {
         return reviewService.putDislikeOnReview(id, userId);
     }
 
     @DeleteMapping("/reviews/{id}/like/{userId}")
-    public Review deleteLikeOnReview(int id, int userId) {
+    public ReviewLikeDislike deleteLikeOnReview(@PathVariable int id, @PathVariable int userId) {
         return reviewService.deleteLikeOnReview(id, userId);
     }
 
     @DeleteMapping("/reviews/{id}/dislike/{userId}")
-    public Review deleteDislikeReview(int id, int userId) {
+    public ReviewLikeDislike deleteDislikeReview(@PathVariable int id, @PathVariable int userId) {
         return reviewService.deleteDislikeOnReview(id, userId);
     }
 }

@@ -3,7 +3,6 @@ package ru.yandex.practicum.filmorate.model;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 import java.util.List;
@@ -11,7 +10,7 @@ import java.util.List;
 @Setter
 @Getter
 @Builder
-@RequiredArgsConstructor
+//@RequiredArgsConstructor
 @EqualsAndHashCode
 public class Review {
     Integer reviewId;
