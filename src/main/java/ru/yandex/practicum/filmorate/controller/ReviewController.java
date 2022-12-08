@@ -52,7 +52,7 @@ public class ReviewController {
 
     @GetMapping("/reviews")
     //Получение всех отзывов по идентификатору фильма, если фильм не указан то все. Если кол-во не указано то 10.
-    public List<Review> getReviewList(@RequestParam(value = "filmId", required=false) Integer filmId,
+    public List<Review> getReviewList(@RequestParam(required=false) Integer filmId,
                                       @RequestParam(defaultValue = "10") Integer count) {
         return reviewService.getReviews(filmId, count);
     }
