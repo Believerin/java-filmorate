@@ -198,9 +198,44 @@ public class FilmDbService implements FilmService {
 
     }
 
-
     public List<Film> getMostPopularFilmsByGenreOrYear(Integer count, Integer genreId, Integer year) {
-        return Collections.emptyList();
+        String sqlFromGenreFilm = "SELECT gf.genre_id, g.genre_name " + "FROM genre_film AS gf " +
+                "LEFT JOIN genre AS g ON g.genre_id = gf.genre_id " + "WHERE film_id = ?;";
+        if (genreId != null) {
+            String sql = "SELECT * " + "FROM film AS f " +
+                    "JOIN (SELECT  * FROM genre_film) AS g_f ON (g_f.film_id = f.film_id AND g_f.genre_id = ?)" +
+                    "LEFT JOIN " + "(SELECT * " + "FROM likes) AS l ON l.film_id = f.film_id " +
+                    "JOIN mpa AS m ON f.mpa_id = m.mpa_id " + "GROUP BY f.film_id " + "ORDER BY COUNT(user_id) DESC " +
+                    "LIMIT ?;";
+            if (year == null) {
+                return jdbcTemplate.query(sql, FilmDbService::mapRowToFilm, genreId, count).stream()
+                        .peek(film -> film.setGenres(
+                                jdbcTemplate.query(sqlFromGenreFilm, FilmDbService::mapRowToGenreFilm, film.getId())))
+                        .collect(Collectors.toList());
+            } else {
+                return jdbcTemplate.query(sql, FilmDbService::mapRowToFilm, genreId, count).stream()
+                        .peek(film -> film.setGenres(
+                                jdbcTemplate.query(sqlFromGenreFilm, FilmDbService::mapRowToGenreFilm, film.getId())))
+                        .filter(film -> film.getReleaseDate().getYear() == year).collect(Collectors.toList());
+            }
+        } else {
+            String sql = "SELECT * " + "FROM film AS f " +
+                    "LEFT JOIN " + "(SELECT * " + "FROM likes) AS l ON l.film_id = f.film_id " +
+                    "JOIN mpa AS m ON f.mpa_id = m.mpa_id " + "GROUP BY f.film_id " + "ORDER BY COUNT(user_id) DESC " +
+                    "LIMIT ?;";
+            if (year == null) {
+                return jdbcTemplate.query(sql, FilmDbService::mapRowToFilm, count).stream()
+                        .peek(film -> film.setGenres(
+                                jdbcTemplate.query(sqlFromGenreFilm, FilmDbService::mapRowToGenreFilm, film.getId())))
+                        .collect(Collectors.toList());
+            } else {
+                return jdbcTemplate.query(sql, FilmDbService::mapRowToFilm, count).stream()
+                        .peek(film -> film.setGenres(
+                                jdbcTemplate.query(sqlFromGenreFilm, FilmDbService::mapRowToGenreFilm, film.getId())))
+                        .filter(film -> film.getReleaseDate().getYear() == year).collect(Collectors.toList());
+            }
+        }
+
     }
 
     @Override
