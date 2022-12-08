@@ -8,6 +8,7 @@ import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.*;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import static ru.yandex.practicum.filmorate.model.Film.CINEMA_START;
@@ -91,6 +92,11 @@ public class FilmServiceImpl implements FilmService {
 
     public List<Film> getMostPopularFilms(int count) {
       return filmDbService.getMostPopularFilms(count);
+    }
+
+    @Override
+    public List<Film> getMostPopularFilmsByGenreOrYear(Integer count, Integer genreId, Integer year) {
+        return Collections.emptyList();
     }
 
     public List<Film> getCommonFilms(int userId, int friendId){

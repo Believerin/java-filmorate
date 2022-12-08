@@ -194,7 +194,15 @@ public class FilmDbService implements FilmService {
                 .peek(film -> film.setGenres(jdbcTemplate.query(
                         sqlFromGenreFilm, FilmDbService::mapRowToGenreFilm, film.getId())
                         )).collect(Collectors.toList());
+
+
     }
+
+
+    public List<Film> getMostPopularFilmsByGenreOrYear(Integer count, Integer genreId, Integer year) {
+        return Collections.emptyList();
+    }
+
     @Override
     public List<Film> getCommonFilms(int userId, int friendId){
         String sqlQuery = "SELECT f.*, m.* FROM FILM f " +

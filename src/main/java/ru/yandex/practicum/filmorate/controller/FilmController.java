@@ -13,6 +13,8 @@ import javax.validation.Valid;
 import java.util.Collection;
 import java.util.List;
 
+import static ru.yandex.practicum.filmorate.model.Film.CINEMA_START;
+
 @RestController
 @RequestMapping
 @Slf4j
@@ -124,5 +126,25 @@ public class FilmController {
         }
     }
     //----------------------------------------------------------------  
+
+    @GetMapping("/films/popular?count={limit}&genreId={genreId}&year={year}")
+    public List<Film> getMostPopularFilmsByGenreOrYear (@RequestParam(defaultValue = "10") Integer count,
+                                                        @RequestParam(value = "genreId") Integer genreId,
+                                                        @RequestParam(value = "year") Integer year) {
+        if (genreId == null && year == null) return this.getMostPopularFilms(count);
+
+        if (count != null && count <= 0) {
+            throw new NoSuchBodyException("count");
+        }
+        if (genreId !=null && (genreId < 1 || genreId > 6)) {
+            throw new NoSuchBodyException("genreId");
+        }
+        if (year !=null && year <= CINEMA_START.getYear()) {
+            throw new NoSuchBodyException("year");
+        }
+
+        return filmService.getMostPopularFilmsByGenreOrYear(count, genreId, year);
+    }
+
 
 }
