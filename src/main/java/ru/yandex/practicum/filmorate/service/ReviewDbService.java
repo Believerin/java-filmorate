@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -8,24 +9,34 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.NoSuchBodyException;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.model.ReviewLikeDislike;
+import ru.yandex.practicum.filmorate.model.ReviewUsefulComparator;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 @Qualifier("Database")
 public class ReviewDbService implements ReviewService {
     private final JdbcTemplate jdbcTemplate;
+    protected final FilmService filmService;
+    protected final UserService userService;
 
-    public ReviewDbService(JdbcTemplate jdbcTemplate) {
+    @Autowired
+    public ReviewDbService(JdbcTemplate jdbcTemplate, @Qualifier("priority") FilmService filmService,
+                           @Qualifier("priority") UserService userService) {
         this.jdbcTemplate = jdbcTemplate;
+        this.filmService = filmService;
+        this.userService = userService;
     }
 
     @Override
     public Review addReview(Review review) {
+        userService.getUserById(review.getUserId());
+        filmService.getFilmById(review.getFilmId());
+
         String query = "INSERT INTO reviews (user_id, film_id, content, is_positive)" + " VALUES(?, ?, ?, ?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
@@ -46,6 +57,9 @@ public class ReviewDbService implements ReviewService {
     @Override
     public Review editReview(Review review) {
         checkIfReviewExists(review.getReviewId());
+        userService.getUserById(review.getUserId());
+        filmService.getFilmById(review.getFilmId());
+
         String query = "UPDATE reviews " + "SET user_id = ?, film_id = ?, content = ?, is_positive = ? " +
                 "WHERE review_id = ?;";
         jdbcTemplate.update(query, review.getUserId(), review.getFilmId(), review.getContent(), review.getIsPositive(),
@@ -66,9 +80,22 @@ public class ReviewDbService implements ReviewService {
         return checkIfReviewExists(id);
     }
 
+    public List<Review> getAllReviews() {
+        String query = "SELECT * FROM reviews";
+        return jdbcTemplate.query(query, ReviewDbService::mapRowToReview);
+    }
+
+
+    public List<Review> getAllReviewsForFilmId(int filmId) {
+        if (filmId == -1) return getAllReviews();
+        String query = "SELECT * FROM reviews WHERE reviews.film_id = ?";
+        return jdbcTemplate.query(query, ReviewDbService::mapRowToReview, filmId);
+    }
+
     @Override
-    public List<Review> getReviewList(int id, int count) {
-        return Collections.emptyList();
+    public List<Review> getReviews(int filmId, int count) {
+        return this.getAllReviewsForFilmId(filmId).stream().sorted(new ReviewUsefulComparator()).limit(count)
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -76,6 +103,8 @@ public class ReviewDbService implements ReviewService {
         String query =
                 "INSERT INTO users_reviews_like_dislike" + " (user_id, review_id, islike) " + "VALUES (?, ?, TRUE)";
         jdbcTemplate.update(query, userId, reviewId);
+        String queryLike = "UPDATE reviews SET useful = useful  + 1 WHERE review_id = ?";
+        jdbcTemplate.update(queryLike, reviewId);
         return new ReviewLikeDislike(userId, reviewId, true);
     }
 
@@ -84,6 +113,8 @@ public class ReviewDbService implements ReviewService {
         String query =
                 "INSERT INTO users_reviews_like_dislike" + " (user_id, review_id, islike) " + "VALUES (?, ?, FALSE)";
         jdbcTemplate.update(query, userId, reviewId);
+        String queryLike = "UPDATE reviews SET useful = useful  - 1 WHERE review_id = ?";
+        jdbcTemplate.update(queryLike, reviewId);
         return new ReviewLikeDislike(userId, reviewId, false);
     }
 
@@ -91,9 +122,10 @@ public class ReviewDbService implements ReviewService {
     public ReviewLikeDislike deleteLikeOnReview(int userId, int reviewId) {
 
         String query =
-                "DELETE FROM users_reviews_like_dislike"
-                        + " WHERE user_id = ? AND review_id = ? AND islike = TRUE";
+                "DELETE FROM users_reviews_like_dislike" + " WHERE user_id = ? AND review_id = ? AND islike = TRUE";
         jdbcTemplate.update(query, userId, reviewId);
+        String queryLike = "UPDATE reviews SET useful = useful  - 1 WHERE review_id = ?";
+        jdbcTemplate.update(queryLike, reviewId);
         return new ReviewLikeDislike(userId, reviewId, true);
     }
 
@@ -101,9 +133,10 @@ public class ReviewDbService implements ReviewService {
     public ReviewLikeDislike deleteDislikeOnReview(int userId, int reviewId) {
 
         String query =
-                "DELETE FROM users_reviews_like_dislike"
-                        + " WHERE user_id = ? AND review_id = ? AND islike = FALSE";
+                "DELETE FROM users_reviews_like_dislike" + " WHERE user_id = ? AND review_id = ? AND islike = FALSE";
         jdbcTemplate.update(query, userId, reviewId);
+        String queryLike = "UPDATE reviews SET useful = useful  + 1 WHERE review_id = ?";
+        jdbcTemplate.update(queryLike, reviewId);
         return new ReviewLikeDislike(userId, reviewId, false);
     }
 

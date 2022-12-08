@@ -14,7 +14,7 @@ public interface ReviewService {
 
     Review getReview(int id);
 
-    List<Review> getReviewList(int id, int count);
+    List<Review> getReviews(int id, int count);
 
     ReviewLikeDislike putLikeOnReview(int id, int userId);
 
