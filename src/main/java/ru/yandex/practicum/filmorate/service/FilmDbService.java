@@ -94,11 +94,11 @@ public class FilmDbService implements FilmService {
 
         if (film.getGenres() != null) {
 
-            StringBuilder sqlGenreFilm = new StringBuilder("INSERT INTO GENRE_FILM (FILM_ID, GENRE_ID) ");
+            StringBuilder sqlGenreFilm = new StringBuilder("INSERT INTO GENRE_FILM (FILM_ID, GENRE_ID) VALUES ");
             film.getGenres().stream()
                     .map(map -> map.get("id"))
-                    .forEach(genreId -> sqlGenreFilm.append(String.format("VALUES (%d, %d) ", film_id, (int) genreId)));
-            sqlGenreFilm.append(";");
+                    .forEach(genreId -> sqlGenreFilm.append(String.format("(%d, %d), ", film_id, (int) genreId)));
+            sqlGenreFilm.delete(sqlGenreFilm.length() - 2, sqlGenreFilm.length()).append(";");
             jdbcTemplate.update(String.valueOf(sqlGenreFilm));
         }
         return getFilmById(film_id);
@@ -192,11 +192,10 @@ public class FilmDbService implements FilmService {
                 "FROM GENRE_FILM AS gf " +
                 "LEFT JOIN GENRE AS g ON g.GENRE_ID = gf.GENRE_ID " +
                 "WHERE FILM_ID = ?;";
-        String sql = "SELECT * " +
+        String sql = "SELECT f.*, m.* " +
                 "FROM FILM AS f " +
                 "LEFT JOIN " +
-                "(SELECT * " +
-                "FROM LIKES) AS l ON l.FILM_ID = f.FILM_ID " +
+                "LIKES AS l ON l.FILM_ID = f.FILM_ID " +
                 "JOIN MPA AS m ON f.MPA_ID = m.MPA_ID " +
                 "GROUP BY f.FILM_ID " +
                 "ORDER BY COUNT(USER_ID) DESC " +

@@ -91,6 +91,7 @@ public class UserDbService implements UserService {
 
     @Override
     public Set<User> getAllFriends(Integer userId) {
+        if (getUserById(userId) == null) throw new NoSuchBodyException("userId пользователя отсутствует");
         String sql = "SELECT USER_ID, EMAIL, LOGIN, NAME, BIRTHDAY " +
                 "FROM " +
                 "(SELECT FRIEND_ID " +
