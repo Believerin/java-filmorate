@@ -6,6 +6,6 @@ public class ReviewUsefulComparator implements Comparator<Review> {
     @Override
     public int compare(Review review1, Review review2) {
 
-        return review1.getUseful().compareTo(review2.getUseful());
+        return review2.getUseful().compareTo(review1.getUseful());
     }
 }

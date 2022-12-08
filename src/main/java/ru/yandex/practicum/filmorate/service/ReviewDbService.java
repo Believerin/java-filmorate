@@ -34,7 +34,7 @@ public class ReviewDbService implements ReviewService {
 
     @Override
     public Review addReview(Review review) {
-        // if (review.getContent() == null ) throw  new NoSuchBodyException("404");
+
         if (userService.getUserById(review.getUserId()) == null ||
                 filmService.getFilmById(review.getFilmId()) == null) {
             throw new NoSuchBodyException("404");
@@ -71,8 +71,10 @@ public class ReviewDbService implements ReviewService {
     @Override
     public Review deleteReview(int id) {
         Review review = checkIfReviewExists(id);
-        String sql = "DELETE " + "FROM reviews " + "WHERE review_id = ?;";
+        String sql = "DELETE " + "FROM users_reviews_like_dislike " + "WHERE review_id = ?;";
         jdbcTemplate.update(sql, id);
+        String sql2 = "DELETE " + "FROM reviews " + "WHERE review_id = ?;";
+        jdbcTemplate.update(sql2, id);
         return review;
     }
 
@@ -84,11 +86,9 @@ public class ReviewDbService implements ReviewService {
     public List<Review> getAllReviewsForFilmId(Integer filmId) {
         String query;
         if (filmId == null) {
-            System.out.println("FILMID NULL");
             query = "SELECT * FROM reviews";
             return jdbcTemplate.query(query, ReviewDbService::mapRowToReview);
         } else {
-            System.out.println("FILMID NOT NULL");
             query = "SELECT * FROM reviews WHERE reviews.film_id = ?";
             return jdbcTemplate.query(query, ReviewDbService::mapRowToReview, filmId);
         }
@@ -102,8 +102,7 @@ public class ReviewDbService implements ReviewService {
 
     @Override
     public ReviewLikeDislike putLikeOnReview(int id, int userId) {
-        String query =
-                "MERGE INTO users_reviews_like_dislike(user_id, review_id, islike) KEY (user_id, review_id) " + "VALUES (?, ?, TRUE)";
+        String query = "INSERT INTO users_reviews_like_dislike(user_id, review_id, islike)  " + "VALUES (?, ?, TRUE)";
         jdbcTemplate.update(query, userId, id);
         String queryLike = "UPDATE reviews SET useful = useful  + 1 WHERE review_id = ?";
         jdbcTemplate.update(queryLike, id);
@@ -112,8 +111,7 @@ public class ReviewDbService implements ReviewService {
 
     @Override
     public ReviewLikeDislike putDislikeOnReview(int id, int userId) {
-        String query = "MERGE INTO users_reviews_like_dislike" +
-                " (user_id, review_id, islike)  KEY (user_id, review_id) VALUES (?, ?, FALSE)";
+        String query = "INSERT INTO users_reviews_like_dislike" + " (user_id, review_id, islike)  VALUES (?, ?, FALSE)";
         jdbcTemplate.update(query, userId, id);
         String queryLike = "UPDATE reviews SET useful = useful  - 1 WHERE review_id = ?";
         jdbcTemplate.update(queryLike, id);
