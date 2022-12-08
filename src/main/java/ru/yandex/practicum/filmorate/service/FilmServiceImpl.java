@@ -63,7 +63,12 @@ public class FilmServiceImpl implements FilmService {
     }
 
     public Mpa getMpa (int id) {
-        return filmDbService.getMpa(id);
+        Mpa mpa = filmDbService.getMpa(id);
+        if (mpa != null) {
+            return mpa;
+        } else {
+            throw new NoSuchBodyException(String.format("Mpa с id %s отсутствует", id));
+        }
     }
 
     public Collection<Mpa> findAllMpa() {
@@ -72,7 +77,12 @@ public class FilmServiceImpl implements FilmService {
 
     @Override
     public Genre getGenre(int id) {
-        return filmDbService.getGenre(id);
+        Genre genre = filmDbService.getGenre(id);
+        if (genre != null) {
+            return genre;
+        } else {
+            throw new NoSuchBodyException(String.format("Genre с id %s отсутствует", id));
+        }
     }
     @Override
     public Collection<Genre> findAllGenres() {
