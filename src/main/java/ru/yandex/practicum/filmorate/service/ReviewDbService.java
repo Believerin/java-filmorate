@@ -9,11 +9,11 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.NoSuchBodyException;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.model.ReviewLikeDislike;
-import ru.yandex.practicum.filmorate.model.ReviewUsefulComparator;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -103,7 +103,8 @@ public class ReviewDbService implements ReviewService {
 
     @Override
     public List<Review> getReviews(Integer filmId, Integer count) {
-        return this.getAllReviewsForFilmId(filmId).stream().sorted(new ReviewUsefulComparator()).limit(count)
+        return this.getAllReviewsForFilmId(filmId).stream()
+                .sorted((Comparator.comparingInt(Review::getUseful)).reversed()).limit(count)
                 .collect(Collectors.toList());
     }
 
