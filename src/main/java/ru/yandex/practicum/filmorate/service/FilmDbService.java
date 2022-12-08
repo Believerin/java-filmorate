@@ -109,7 +109,11 @@ public class FilmDbService implements FilmService {
         String sql = "SELECT * " +
                 "FROM MPA " +
                 "WHERE MPA_ID = ?;";
-        return jdbcTemplate.queryForObject(sql, FilmDbService::mapRowToMpa, id);
+        try {
+            return jdbcTemplate.queryForObject(sql, FilmDbService::mapRowToMpa, id);
+        } catch (EmptyResultDataAccessException e) {
+            return null;
+        }
     }
 
     public Collection<Mpa> findAllMpa() {
@@ -122,7 +126,11 @@ public class FilmDbService implements FilmService {
         String sql = "SELECT * " +
                 "FROM GENRE " +
                 "WHERE GENRE_ID = ?;";
-        return jdbcTemplate.queryForObject(sql, FilmDbService::mapRowToGenre, id);
+        try {
+             return jdbcTemplate.queryForObject(sql, FilmDbService::mapRowToGenre, id);
+        } catch (EmptyResultDataAccessException e) {
+            return null;
+        }
     }
 
     @Override

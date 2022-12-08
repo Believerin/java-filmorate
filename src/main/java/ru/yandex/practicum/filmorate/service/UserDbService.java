@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.exception.NoSuchBodyException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.sql.ResultSet;
@@ -63,6 +64,7 @@ public class UserDbService implements UserService {
 
     @Override
     public List<User> addFriend(Integer userId, Integer friendId) {
+        if (getUserById(friendId) == null) throw new NoSuchBodyException("friendId друга отсутствует");
         String sql = "INSERT INTO FRIENDSHIP (USER_ID, FRIEND_ID, STATUS) " +
                      "VALUES (?, ?, 'NOT_CONFIRMED');";
         jdbcTemplate.update(sql, userId, friendId);
