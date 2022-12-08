@@ -44,7 +44,7 @@ public class ReviewDbService implements ReviewService {
 
         if (userService.getUserById(review.getUserId()) == null ||
                 filmService.getFilmById(review.getFilmId()) == null) {
-            throw new NoSuchBodyException("404");
+            throw new NoSuchBodyException("ресурс");
         }
 
         String query =
@@ -127,7 +127,6 @@ public class ReviewDbService implements ReviewService {
 
     @Override
     public ReviewLikeDislike deleteLikeOnReview(int id, int userId) {
-
         String query =
                 "DELETE FROM users_reviews_like_dislike" + " WHERE user_id = ? AND review_id = ? AND islike = TRUE";
         jdbcTemplate.update(query, userId, id);
@@ -138,9 +137,8 @@ public class ReviewDbService implements ReviewService {
 
     @Override
     public ReviewLikeDislike deleteDislikeOnReview(int id, int userId) {
-
-        String query =
-                "DELETE FROM users_reviews_like_dislike" + " WHERE user_id = ? AND review_id = ? AND islike = FALSE";
+        String query = "DELETE FROM users_reviews_like_dislike" +
+                " WHERE user_id = ? AND review_id = ? AND islike = FALSE";
         jdbcTemplate.update(query, userId, id);
         String queryLike = "UPDATE reviews SET useful = useful  + 1 WHERE review_id = ?";
         jdbcTemplate.update(queryLike, id);

@@ -12,20 +12,18 @@ import java.util.List;
 @Setter
 @Getter
 @Builder
-//@RequiredArgsConstructor
 @EqualsAndHashCode
 public class Review {
 
-    Integer reviewId;
+    private Integer reviewId;
     @NotNull
-    String content;
+    private String content;
     @NotNull
-    Boolean isPositive;
+    private Boolean isPositive;
     @NotNull
-    Integer userId;
+    private Integer userId;
     @NotNull
-    Integer filmId;
-    //List<ReviewLikeDislike> likesDislikes;
-    Integer useful; // рейтинг полезности
+    private Integer filmId;
+    private Integer useful;
 
 }

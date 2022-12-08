@@ -16,5 +16,5 @@ import lombok.Setter;
 public class ReviewLikeDislike {
     private int reviewId;
     private int userId;
-    boolean isLike;
+    private boolean isLike;
 }
