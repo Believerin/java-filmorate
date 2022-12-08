@@ -92,4 +92,8 @@ public class FilmServiceImpl implements FilmService {
     public List<Film> getMostPopularFilms(int count) {
       return filmDbService.getMostPopularFilms(count);
     }
+
+    public List<Film> getCommonFilms(int userId, int friendId){
+        return filmDbService.getCommonFilms(userId, friendId);
+    }
 }

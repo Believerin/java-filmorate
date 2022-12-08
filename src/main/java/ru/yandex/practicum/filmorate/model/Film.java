@@ -33,6 +33,9 @@ public class Film {
     @NotNull
     private Map<String, Object> mpa;
     @EqualsAndHashCode.Exclude
-
     private List<Map<String, Object>> genres;
+
+    //Добавление нового поля director.
+    @EqualsAndHashCode.Exclude
+    private List<Director> directors;
 }

@@ -1,5 +1,4 @@
 package ru.yandex.practicum.filmorate.service;
-
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
@@ -30,4 +29,7 @@ public interface FilmService {
     Film deleteLike (Integer filmId, Integer userId);
 
     List<Film> getMostPopularFilms(int count);
+
+    List<Film> getCommonFilms(int userId, int friendId);
+
 }
