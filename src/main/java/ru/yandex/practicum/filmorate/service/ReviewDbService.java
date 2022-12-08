@@ -34,8 +34,11 @@ public class ReviewDbService implements ReviewService {
 
     @Override
     public Review addReview(Review review) {
-        userService.getUserById(review.getUserId());
-        filmService.getFilmById(review.getFilmId());
+        // if (review.getContent() == null ) throw  new NoSuchBodyException("404");
+        if (userService.getUserById(review.getUserId()) == null ||
+                filmService.getFilmById(review.getFilmId()) == null) {
+            throw new NoSuchBodyException("404");
+        }
 
         String query =
                 "INSERT INTO reviews (user_id, film_id, content, is_positive, useful)" + " VALUES(?, ?, ?, ?, 0)";
@@ -59,13 +62,9 @@ public class ReviewDbService implements ReviewService {
     @Override
     public Review editReview(Review review) {
         checkIfReviewExists(review.getReviewId());
-        userService.getUserById(review.getUserId());
-        filmService.getFilmById(review.getFilmId());
 
-        String query = "UPDATE reviews " + "SET user_id = ?, film_id = ?, content = ?, is_positive = ? " +
-                "WHERE review_id = ?;";
-        jdbcTemplate.update(query, review.getUserId(), review.getFilmId(), review.getContent(), review.getIsPositive(),
-                review.getReviewId());
+        String query = "UPDATE reviews " + "SET content = ?, is_positive = ? " + "WHERE review_id = ?;";
+        jdbcTemplate.update(query, review.getContent(), review.getIsPositive(), review.getReviewId());
         return review;
     }
 
@@ -85,9 +84,11 @@ public class ReviewDbService implements ReviewService {
     public List<Review> getAllReviewsForFilmId(Integer filmId) {
         String query;
         if (filmId == null) {
+            System.out.println("FILMID NULL");
             query = "SELECT * FROM reviews";
             return jdbcTemplate.query(query, ReviewDbService::mapRowToReview);
         } else {
+            System.out.println("FILMID NOT NULL");
             query = "SELECT * FROM reviews WHERE reviews.film_id = ?";
             return jdbcTemplate.query(query, ReviewDbService::mapRowToReview, filmId);
         }
@@ -100,57 +101,52 @@ public class ReviewDbService implements ReviewService {
     }
 
     @Override
-    public ReviewLikeDislike putLikeOnReview(int userId, int reviewId) {
+    public ReviewLikeDislike putLikeOnReview(int id, int userId) {
         String query =
-                "INSERT INTO users_reviews_like_dislike" + " (user_id, review_id, islike) " + "VALUES (?, ?, TRUE)";
-        jdbcTemplate.update(query, userId, reviewId);
+                "MERGE INTO users_reviews_like_dislike(user_id, review_id, islike) KEY (user_id, review_id) " + "VALUES (?, ?, TRUE)";
+        jdbcTemplate.update(query, userId, id);
         String queryLike = "UPDATE reviews SET useful = useful  + 1 WHERE review_id = ?";
-        jdbcTemplate.update(queryLike, reviewId);
-        return new ReviewLikeDislike(userId, reviewId, true);
+        jdbcTemplate.update(queryLike, id);
+        return new ReviewLikeDislike(id, userId, true);
     }
 
     @Override
-    public ReviewLikeDislike putDislikeOnReview(int userId, int reviewId) {
-        String query =
-                "INSERT INTO users_reviews_like_dislike" + " (user_id, review_id, islike) " + "VALUES (?, ?, FALSE)";
-        jdbcTemplate.update(query, userId, reviewId);
+    public ReviewLikeDislike putDislikeOnReview(int id, int userId) {
+        String query = "MERGE INTO users_reviews_like_dislike" +
+                " (user_id, review_id, islike)  KEY (user_id, review_id) VALUES (?, ?, FALSE)";
+        jdbcTemplate.update(query, userId, id);
         String queryLike = "UPDATE reviews SET useful = useful  - 1 WHERE review_id = ?";
-        jdbcTemplate.update(queryLike, reviewId);
-        return new ReviewLikeDislike(userId, reviewId, false);
+        jdbcTemplate.update(queryLike, id);
+        return new ReviewLikeDislike(id, userId, false);
     }
 
     @Override
-    public ReviewLikeDislike deleteLikeOnReview(int userId, int reviewId) {
+    public ReviewLikeDislike deleteLikeOnReview(int id, int userId) {
 
         String query =
                 "DELETE FROM users_reviews_like_dislike" + " WHERE user_id = ? AND review_id = ? AND islike = TRUE";
-        jdbcTemplate.update(query, userId, reviewId);
+        jdbcTemplate.update(query, userId, id);
         String queryLike = "UPDATE reviews SET useful = useful  - 1 WHERE review_id = ?";
-        jdbcTemplate.update(queryLike, reviewId);
-        return new ReviewLikeDislike(userId, reviewId, true);
+        jdbcTemplate.update(queryLike, id);
+        return new ReviewLikeDislike(id, userId, true);
     }
 
     @Override
-    public ReviewLikeDislike deleteDislikeOnReview(int userId, int reviewId) {
+    public ReviewLikeDislike deleteDislikeOnReview(int id, int userId) {
 
         String query =
                 "DELETE FROM users_reviews_like_dislike" + " WHERE user_id = ? AND review_id = ? AND islike = FALSE";
-        jdbcTemplate.update(query, userId, reviewId);
+        jdbcTemplate.update(query, userId, id);
         String queryLike = "UPDATE reviews SET useful = useful  + 1 WHERE review_id = ?";
-        jdbcTemplate.update(queryLike, reviewId);
-        return new ReviewLikeDislike(userId, reviewId, false);
+        jdbcTemplate.update(queryLike, id);
+        return new ReviewLikeDislike(id, userId, false);
     }
 
     private static Review mapRowToReview(ResultSet resultSet, int rowNum) throws SQLException {
 
-        return Review.builder()
-                .reviewId(resultSet.getInt("review_id"))
-                .userId(resultSet.getInt("user_id"))
-                .filmId(resultSet.getInt("film_id"))
-                .content(resultSet.getString("content"))
-                .isPositive(resultSet.getBoolean("is_positive"))
-                .useful(resultSet.getInt("useful"))
-                .build();
+        return Review.builder().reviewId(resultSet.getInt("review_id")).userId(resultSet.getInt("user_id"))
+                .filmId(resultSet.getInt("film_id")).content(resultSet.getString("content"))
+                .isPositive(resultSet.getBoolean("is_positive")).useful(resultSet.getInt("useful")).build();
     }
 
     private Review checkIfReviewExists(int reviewId) throws NoSuchBodyException {
