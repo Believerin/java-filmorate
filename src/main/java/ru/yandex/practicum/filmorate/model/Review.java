@@ -18,7 +18,7 @@ public class Review {
     Boolean isPositive;
     Integer userId;
     Integer filmId;
-    List<ReviewLikeDislike> likesDislikes;
+    //List<ReviewLikeDislike> likesDislikes;
     Integer useful; // рейтинг полезности
 
 }

@@ -12,9 +12,9 @@ public interface ReviewService {
 
     Review deleteReview(int id);
 
-    Review getReview(int id);
+    Review getReviewById(int id);
 
-    List<Review> getReviews(int id, int count);
+    List<Review> getReviews(Integer id, Integer count);
 
     ReviewLikeDislike putLikeOnReview(int id, int userId);
 

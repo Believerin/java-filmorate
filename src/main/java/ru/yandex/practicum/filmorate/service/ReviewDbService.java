@@ -37,9 +37,11 @@ public class ReviewDbService implements ReviewService {
         userService.getUserById(review.getUserId());
         filmService.getFilmById(review.getFilmId());
 
-        String query = "INSERT INTO reviews (user_id, film_id, content, is_positive)" + " VALUES(?, ?, ?, ?)";
+        String query =
+                "INSERT INTO reviews (user_id, film_id, content, is_positive, useful)" + " VALUES(?, ?, ?, ?, 0)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
+        review.setUseful(0);
         jdbcTemplate.update(connection -> {
             PreparedStatement stmt = connection.prepareStatement(query, new String[]{"review_id"});
             stmt.setInt(1, review.getUserId());
@@ -76,24 +78,23 @@ public class ReviewDbService implements ReviewService {
     }
 
     @Override
-    public Review getReview(int id) {
+    public Review getReviewById(int id) {
         return checkIfReviewExists(id);
     }
 
-    public List<Review> getAllReviews() {
-        String query = "SELECT * FROM reviews";
-        return jdbcTemplate.query(query, ReviewDbService::mapRowToReview);
-    }
-
-
-    public List<Review> getAllReviewsForFilmId(int filmId) {
-        if (filmId == -1) return getAllReviews();
-        String query = "SELECT * FROM reviews WHERE reviews.film_id = ?";
-        return jdbcTemplate.query(query, ReviewDbService::mapRowToReview, filmId);
+    public List<Review> getAllReviewsForFilmId(Integer filmId) {
+        String query;
+        if (filmId == null) {
+            query = "SELECT * FROM reviews";
+            return jdbcTemplate.query(query, ReviewDbService::mapRowToReview);
+        } else {
+            query = "SELECT * FROM reviews WHERE reviews.film_id = ?";
+            return jdbcTemplate.query(query, ReviewDbService::mapRowToReview, filmId);
+        }
     }
 
     @Override
-    public List<Review> getReviews(int filmId, int count) {
+    public List<Review> getReviews(Integer filmId, Integer count) {
         return this.getAllReviewsForFilmId(filmId).stream().sorted(new ReviewUsefulComparator()).limit(count)
                 .collect(Collectors.toList());
     }
@@ -142,14 +143,19 @@ public class ReviewDbService implements ReviewService {
 
     private static Review mapRowToReview(ResultSet resultSet, int rowNum) throws SQLException {
 
-        return Review.builder().reviewId(resultSet.getInt("review_id")).userId(resultSet.getInt("user_id"))
-                .filmId(resultSet.getInt("film_id")).content(resultSet.getString("content"))
-                .isPositive(resultSet.getBoolean("is_positive")).build();
+        return Review.builder()
+                .reviewId(resultSet.getInt("review_id"))
+                .userId(resultSet.getInt("user_id"))
+                .filmId(resultSet.getInt("film_id"))
+                .content(resultSet.getString("content"))
+                .isPositive(resultSet.getBoolean("is_positive"))
+                .useful(resultSet.getInt("useful"))
+                .build();
     }
 
     private Review checkIfReviewExists(int reviewId) throws NoSuchBodyException {
         String query = "SELECT * FROM reviews WHERE review_id = ?";
         return jdbcTemplate.query(query, ReviewDbService::mapRowToReview, reviewId).stream().findAny()
-                .orElseThrow(() -> new NoSuchBodyException(("Film not found")));
+                .orElseThrow(() -> new NoSuchBodyException(("Review not found")));
     }
 }
