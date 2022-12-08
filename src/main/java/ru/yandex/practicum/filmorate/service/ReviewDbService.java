@@ -20,9 +20,9 @@ import java.util.stream.Collectors;
 @Component
 @Qualifier("Database")
 public class ReviewDbService implements ReviewService {
-    private final JdbcTemplate jdbcTemplate;
     protected final FilmService filmService;
     protected final UserService userService;
+    private final JdbcTemplate jdbcTemplate;
 
     @Autowired
     public ReviewDbService(JdbcTemplate jdbcTemplate, @Qualifier("priority") FilmService filmService,
@@ -30,6 +30,13 @@ public class ReviewDbService implements ReviewService {
         this.jdbcTemplate = jdbcTemplate;
         this.filmService = filmService;
         this.userService = userService;
+    }
+
+    private static Review mapRowToReview(ResultSet resultSet, int rowNum) throws SQLException {
+
+        return Review.builder().reviewId(resultSet.getInt("review_id")).userId(resultSet.getInt("user_id"))
+                .filmId(resultSet.getInt("film_id")).content(resultSet.getString("content"))
+                .isPositive(resultSet.getBoolean("is_positive")).useful(resultSet.getInt("useful")).build();
     }
 
     @Override
@@ -138,13 +145,6 @@ public class ReviewDbService implements ReviewService {
         String queryLike = "UPDATE reviews SET useful = useful  + 1 WHERE review_id = ?";
         jdbcTemplate.update(queryLike, id);
         return new ReviewLikeDislike(id, userId, false);
-    }
-
-    private static Review mapRowToReview(ResultSet resultSet, int rowNum) throws SQLException {
-
-        return Review.builder().reviewId(resultSet.getInt("review_id")).userId(resultSet.getInt("user_id"))
-                .filmId(resultSet.getInt("film_id")).content(resultSet.getString("content"))
-                .isPositive(resultSet.getBoolean("is_positive")).useful(resultSet.getInt("useful")).build();
     }
 
     private Review checkIfReviewExists(int reviewId) throws NoSuchBodyException {
