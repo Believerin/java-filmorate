@@ -127,8 +127,8 @@ public class ReviewDbService implements ReviewService {
 
     @Override
     public ReviewLikeDislike deleteLikeOnReview(int id, int userId) {
-        String query =
-                "DELETE FROM users_reviews_like_dislike" + " WHERE user_id = ? AND review_id = ? AND islike = TRUE";
+        String query = "DELETE FROM users_reviews_like_dislike"
+                + " WHERE user_id = ? AND review_id = ? AND islike = TRUE";
         jdbcTemplate.update(query, userId, id);
         String queryLike = "UPDATE reviews SET useful = useful  - 1 WHERE review_id = ?";
         jdbcTemplate.update(queryLike, id);
