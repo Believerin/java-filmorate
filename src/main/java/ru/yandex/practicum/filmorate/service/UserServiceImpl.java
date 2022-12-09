@@ -9,7 +9,9 @@ import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
+
 @Service
 @Qualifier("Secondary")
 public class UserServiceImpl implements UserService {
@@ -71,4 +73,16 @@ public class UserServiceImpl implements UserService {
     public Set<User> getCommonFriends(Integer userId, Integer otherUserId) {
         return userDbService.getCommonFriends(userId, otherUserId);
     }
+
+    /*Эндпоинт для удаления пользователей*/
+    @Override
+    public User delete(Integer userId) {
+        User user = userDbService.delete(userId);
+        if (user == null) {
+            throw new NoSuchBodyException(String.format("Пользователь с id %s отсутствует", userId));
+        } else {
+            return user;
+        }
+    }
+    /*Эндпоинт для удаления пользователей*/
 }

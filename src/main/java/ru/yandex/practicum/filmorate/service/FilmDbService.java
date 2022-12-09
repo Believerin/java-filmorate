@@ -5,6 +5,7 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.exception.NoSuchBodyException;
 import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.status.Genres;
 import ru.yandex.practicum.filmorate.status.Rating;
@@ -25,6 +26,8 @@ public class FilmDbService implements FilmService {
         this.jdbcTemplate = jdbcTemplate;
         this.directorService = directorService;
     }
+
+
 
     @Override
     public Collection<Film> findAll() {
@@ -91,11 +94,11 @@ public class FilmDbService implements FilmService {
 
         if (film.getGenres() != null) {
 
-            StringBuilder sqlGenreFilm =  new StringBuilder("INSERT INTO GENRE_FILM (FILM_ID, GENRE_ID) ");
+            StringBuilder sqlGenreFilm = new StringBuilder("INSERT INTO GENRE_FILM (FILM_ID, GENRE_ID) VALUES ");
             film.getGenres().stream()
                     .map(map -> map.get("id"))
-                    .forEach(genreId -> sqlGenreFilm.append(String.format("VALUES (%d, %d) ", film_id, (int)genreId)));
-            sqlGenreFilm.append(";");
+                    .forEach(genreId -> sqlGenreFilm.append(String.format("(%d, %d), ", film_id, (int) genreId)));
+            sqlGenreFilm.delete(sqlGenreFilm.length() - 2, sqlGenreFilm.length()).append(";");
             jdbcTemplate.update(String.valueOf(sqlGenreFilm));
         }
         return getFilmById(film_id);
@@ -110,7 +113,7 @@ public class FilmDbService implements FilmService {
                 , film.getDuration(), film.getMpa().get("id"), film.getId()) > 0;
         jdbcTemplate.update("DELETE FROM GENRE_FILM WHERE FILM_ID = ?;", film.getId());
         if (film.getGenres() != null && !film.getGenres().isEmpty()) {
-            StringBuilder sqlGenreFilm =  new StringBuilder("INSERT INTO GENRE_FILM (FILM_ID, GENRE_ID) VALUES ");
+            StringBuilder sqlGenreFilm = new StringBuilder("INSERT INTO GENRE_FILM (FILM_ID, GENRE_ID) VALUES ");
             film.getGenres().stream()
                     .distinct()
                     .map(map -> map.get("id"))
@@ -125,7 +128,7 @@ public class FilmDbService implements FilmService {
         return doesExist ? getFilmById(film.getId()) : null;
     }
 
-    public Mpa getMpa (int id) {
+    public Mpa getMpa(int id) {
         String sql = "SELECT * " +
                 "FROM MPA " +
                 "WHERE MPA_ID = ?;";
@@ -142,7 +145,7 @@ public class FilmDbService implements FilmService {
         return jdbcTemplate.query(sql, FilmDbService::mapRowToMpa);
     }
 
-    public Genre getGenre (int id) {
+    public Genre getGenre(int id) {
         String sql = "SELECT * " +
                 "FROM GENRE " +
                 "WHERE GENRE_ID = ?;";
@@ -161,9 +164,9 @@ public class FilmDbService implements FilmService {
     }
 
 
-    public Film addLike (Integer filmId, Integer userId) {
+    public Film addLike(Integer filmId, Integer userId) {
         String sql = "INSERT INTO LIKES (FILM_ID, USER_iD) " +
-                     "VALUES (?, ?);";
+                "VALUES (?, ?);";
         jdbcTemplate.update(sql, filmId, userId);
         return getFilmById(filmId);
     }
@@ -177,8 +180,8 @@ public class FilmDbService implements FilmService {
     @Override
     public Film deleteLike(Integer filmId, Integer userId) {
         String sql = "DELETE " +
-                     "FROM LIKES " +
-                     "WHERE FILM_ID = ? AND USER_ID = ?;";
+                "FROM LIKES " +
+                "WHERE FILM_ID = ? AND USER_ID = ?;";
         jdbcTemplate.update(sql, filmId, userId);
         return getFilmById(filmId);
     }
@@ -186,25 +189,25 @@ public class FilmDbService implements FilmService {
     @Override
     public List<Film> getMostPopularFilms(int count) {
         String sqlFromGenreFilm = "SELECT gf.GENRE_ID, g.GENRE_NAME " +
-                                  "FROM GENRE_FILM AS gf " +
-                                  "LEFT JOIN GENRE AS g ON g.GENRE_ID = gf.GENRE_ID " +
-                                  "WHERE FILM_ID = ?;";
-        String sql = "SELECT * " +
-                     "FROM FILM AS f " +
-                     "LEFT JOIN " +
-                     "(SELECT * " +
-                     "FROM LIKES) AS l ON l.FILM_ID = f.FILM_ID " +
-                     "JOIN MPA AS m ON f.MPA_ID = m.MPA_ID " +
-                     "GROUP BY f.FILM_ID " +
-                     "ORDER BY COUNT(USER_ID) DESC " +
-                     "LIMIT ?;";
+                "FROM GENRE_FILM AS gf " +
+                "LEFT JOIN GENRE AS g ON g.GENRE_ID = gf.GENRE_ID " +
+                "WHERE FILM_ID = ?;";
+        String sql = "SELECT f.*, m.* " +
+                "FROM FILM AS f " +
+                "LEFT JOIN " +
+                "LIKES AS l ON l.FILM_ID = f.FILM_ID " +
+                "JOIN MPA AS m ON f.MPA_ID = m.MPA_ID " +
+                "GROUP BY f.FILM_ID " +
+                "ORDER BY COUNT(USER_ID) DESC " +
+                "LIMIT ?;";
         return jdbcTemplate.query(sql, FilmDbService::mapRowToFilm, count).stream()
                 .peek(film -> film.setGenres(jdbcTemplate.query(
                         sqlFromGenreFilm, FilmDbService::mapRowToGenreFilm, film.getId())
-                        )).collect(Collectors.toList());
+                )).collect(Collectors.toList());
     }
+
     @Override
-    public List<Film> getCommonFilms(int userId, int friendId){
+    public List<Film> getCommonFilms(int userId, int friendId) {
         String sqlQuery = "SELECT f.*, m.* FROM FILM f " +
                 "JOIN MPA m on f.MPA_ID = m.MPA_ID " +
                 "JOIN LIKES l on f.FILM_ID = l.FILM_ID " +
@@ -220,6 +223,16 @@ public class FilmDbService implements FilmService {
                 "ORDER BY COUNT(l.USER_ID) DESC;";
         return jdbcTemplate.query(sqlQuery, FilmDbService::mapRowToFilm, userId, friendId);
     }
+
+    /*Эндпоинт для удаления пользователей*/
+    @Override
+    public Film delete(Integer filmId) {
+        Film film = getFilmById(filmId);
+        String sqlQuery = "DELETE FROM FILM WHERE film_id=?";
+        jdbcTemplate.update(sqlQuery, filmId);
+        return film;
+    }
+    /*Эндпоинт для удаления пользователей*/
 
     //............................ Служебные методы ..............................................
 
@@ -261,17 +274,18 @@ public class FilmDbService implements FilmService {
     private void fillMpaTable() {
         if (jdbcTemplate.queryForList("SELECT MPA_ID FROM MPA;", Integer.class).isEmpty()) {
             String sql = "INSERT INTO MPA (MPA_ID, MPA_NAME) " +
-                         "VALUES (?, ?);";
+                    "VALUES (?, ?);";
             for (Rating rating : Rating.values()) {
                 Mpa o = new Mpa(rating);
                 jdbcTemplate.update(sql, o.getId(), o.getName());
             }
         }
     }
+
     private void fillGenreTable() {
         if (jdbcTemplate.queryForList("SELECT GENRE_ID FROM GENRE;", Integer.class).isEmpty()) {
             String sql = "INSERT INTO GENRE (GENRE_ID, GENRE_NAME) " +
-                         "VALUES (?, ?);";
+                    "VALUES (?, ?);";
             for (Genres genres : Genres.values()) {
                 Genre o = new Genre(genres);
                 jdbcTemplate.update(sql, o.getId(), o.getName().toString());
@@ -291,11 +305,16 @@ public class FilmDbService implements FilmService {
         return values;
     }
 
-    /**Геттер для метода mapRowToFilm*/
+    /**
+     * Геттер для метода mapRowToFilm
+     */
     public static Film mapRowToFilmGetter(ResultSet resultSet, int rowNum) throws SQLException {
         return mapRowToFilm(resultSet, rowNum);
     }
-    /**Геттер для метода mapRowToGenreFilm*/
+
+    /**
+     * Геттер для метода mapRowToGenreFilm
+     */
     public static Map<String, Object> mapRowToGenreFilmGetter(ResultSet resultSet, int rowNum) throws SQLException {
         return mapRowToGenreFilm(resultSet, rowNum);
     }

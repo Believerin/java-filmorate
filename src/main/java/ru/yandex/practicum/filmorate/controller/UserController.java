@@ -3,6 +3,8 @@ package ru.yandex.practicum.filmorate.controller;
 import lombok.extern.slf4j.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.NoSuchBodyException;
 import ru.yandex.practicum.filmorate.model.*;
@@ -20,6 +22,11 @@ public class UserController {
     @Autowired
     public UserController( @Qualifier("Secondary") UserService userService) {
         this.userService = userService;
+    }
+
+    @DeleteMapping("/{userId}")
+    public User delete(@PathVariable Integer userId) {
+        return userService.delete(userId);
     }
 
     @GetMapping

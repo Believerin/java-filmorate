@@ -5,6 +5,7 @@ import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 public interface UserService {
@@ -26,4 +27,8 @@ public interface UserService {
     List<User> confirmFriend(Integer userId, Integer friendId);
 
     Set<User> getCommonFriends(Integer userId, Integer otherUserId);
+
+    /*Эндпоинт для удаления пользователей*/
+    User delete(Integer userId);
+    /*Эндпоинт для удаления пользователей*/
 }
