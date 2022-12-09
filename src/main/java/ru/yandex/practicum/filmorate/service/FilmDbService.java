@@ -245,7 +245,6 @@ public class FilmDbService implements FilmService {
         }
 
       }
-    }
 
     @Override
     public List<Film> getCommonFilms(int userId, int friendId) {
