@@ -15,7 +15,7 @@ import static ru.yandex.practicum.filmorate.model.Film.CINEMA_START;
 @Service
 @Qualifier("Secondary")
 public class FilmServiceImpl implements FilmService {
-    
+
     private final FilmDbService filmDbService;
 
     @Autowired
@@ -28,7 +28,7 @@ public class FilmServiceImpl implements FilmService {
         return filmDbService.findAll();
     }
 
-    public  Film getFilmById(Integer id) {
+    public Film getFilmById(Integer id) {
         Film film = filmDbService.getFilmById(id);
         if (film != null) {
             return film;
@@ -63,7 +63,12 @@ public class FilmServiceImpl implements FilmService {
     }
 
     public Mpa getMpa (int id) {
-        return filmDbService.getMpa(id);
+        Mpa mpa = filmDbService.getMpa(id);
+        if (mpa != null) {
+            return mpa;
+        } else {
+            throw new NoSuchBodyException(String.format("Mpa с id %s отсутствует", id));
+        }
     }
 
     public Collection<Mpa> findAllMpa() {
@@ -72,25 +77,31 @@ public class FilmServiceImpl implements FilmService {
 
     @Override
     public Genre getGenre(int id) {
-        return filmDbService.getGenre(id);
+        Genre genre = filmDbService.getGenre(id);
+        if (genre != null) {
+            return genre;
+        } else {
+            throw new NoSuchBodyException(String.format("Genre с id %s отсутствует", id));
+        }
     }
+
     @Override
     public Collection<Genre> findAllGenres() {
         return filmDbService.findAllGenres();
     }
 
-    public Film addLike (Integer filmId, Integer userId) {
+    public Film addLike(Integer filmId, Integer userId) {
         filmDbService.addLike(filmId, userId);
         return filmDbService.getFilmById(filmId);
     }
 
-    public Film deleteLike (Integer filmId, Integer userId) {
+    public Film deleteLike(Integer filmId, Integer userId) {
         filmDbService.deleteLike(filmId, userId);
         return filmDbService.getFilmById(filmId);
     }
 
     public List<Film> getMostPopularFilms(int count) {
-      return filmDbService.getMostPopularFilms(count);
+        return filmDbService.getMostPopularFilms(count);
     }
 
     @Override
@@ -98,7 +109,19 @@ public class FilmServiceImpl implements FilmService {
         return filmDbService.getMostPopularFilmsByGenreOrYear(count, genreId,  year);
     }
 
-    public List<Film> getCommonFilms(int userId, int friendId){
+    public List<Film> getCommonFilms(int userId, int friendId) {
         return filmDbService.getCommonFilms(userId, friendId);
     }
+
+    /*Эндпоинт для удаления пользователей*/
+    @Override
+    public Film delete(Integer filmId) {
+        Film film = filmDbService.delete(filmId);
+        if (film == null) {
+            throw new NoSuchBodyException(String.format("Фильм с id %s отсутствует", filmId));
+        } else {
+            return film;
+        }
+    }
+    /*Эндпоинт для удаления пользователей*/
 }
