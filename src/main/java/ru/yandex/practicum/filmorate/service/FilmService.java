@@ -32,6 +32,8 @@ public interface FilmService {
 
     List<Film> getMostPopularFilms(int count);
 
+    List<Film> getMostPopularFilmsByGenreOrYear(Integer count, Integer genreId, Integer year);
+
     List<Film> getCommonFilms(int userId, int friendId);
 
     /*Эндпоинт для удаления пользователей*/

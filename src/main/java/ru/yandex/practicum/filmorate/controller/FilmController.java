@@ -16,6 +16,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
+import static ru.yandex.practicum.filmorate.model.Film.CINEMA_START;
+
 @RestController
 @RequestMapping
 @Slf4j
@@ -69,12 +71,25 @@ public class FilmController {
     }
 
     @GetMapping("/films/popular")
-    public List<Film> getMostPopularFilms(@RequestParam(defaultValue = "10") int count) {
+    public List<Film> getMostPopularFilms (@RequestParam(defaultValue = "10") int count,
+                                           @RequestParam(required=false) Integer genreId,
+                                           @RequestParam(required=false) Integer year) {
         if (count <= 0) {
             throw new NoSuchBodyException("count");
         }
-        return filmService.getMostPopularFilms(count);
+        if (genreId == null && year == null) {
+            return filmService.getMostPopularFilms(count);
+        } else {
+            if (genreId !=null && (genreId < 1 || genreId > 6)) {
+                throw new NoSuchBodyException("genreId");
+            }
+            if (year !=null && year <= CINEMA_START.getYear()) {
+                throw new NoSuchBodyException("year");
+            }
+            return filmService.getMostPopularFilmsByGenreOrYear(count, genreId, year);
+        }
     }
+
 
     @GetMapping("/mpa/{id}")
     public Mpa getMpa(@PathVariable Integer id) {
@@ -132,5 +147,4 @@ public class FilmController {
         }
     }
     //----------------------------------------------------------------  
-
 }
