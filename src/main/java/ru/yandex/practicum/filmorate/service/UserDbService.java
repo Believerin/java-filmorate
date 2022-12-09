@@ -21,6 +21,7 @@ public class UserDbService implements UserService {
         this.jdbcTemplate = jdbcTemplate;
     }
 
+
     @Override
     public Collection<User> findAll() {
         String sql = "SELECT * " +
@@ -66,7 +67,7 @@ public class UserDbService implements UserService {
     public List<User> addFriend(Integer userId, Integer friendId) {
         if (getUserById(friendId) == null) throw new NoSuchBodyException("friendId друга отсутствует");
         String sql = "INSERT INTO FRIENDSHIP (USER_ID, FRIEND_ID, STATUS) " +
-                     "VALUES (?, ?, 'NOT_CONFIRMED');";
+                "VALUES (?, ?, 'NOT_CONFIRMED');";
         jdbcTemplate.update(sql, userId, friendId);
         return List.of(getUserById(userId), getUserById(friendId));
     }
@@ -74,8 +75,8 @@ public class UserDbService implements UserService {
     @Override
     public List<User> deleteFriend(Integer userId, Integer friendId) {
         String sql = "DELETE " +
-                     "FROM FRIENDSHIP " +
-                     "WHERE USER_ID = ? AND FRIEND_ID = ?;";
+                "FROM FRIENDSHIP " +
+                "WHERE USER_ID = ? AND FRIEND_ID = ?;";
         jdbcTemplate.update(sql, userId, friendId);
         return List.of(getUserById(userId), getUserById(friendId));
     }
@@ -83,32 +84,43 @@ public class UserDbService implements UserService {
     @Override
     public List<User> confirmFriend(Integer userId, Integer friendId) {
         String sql = "UPDATE FRIENDSHIP " +
-                     "SET STATUS = 'CONFIRMED' " +
-                     "WHERE USER_ID =? AND FRIEND_ID = ?;";
+                "SET STATUS = 'CONFIRMED' " +
+                "WHERE USER_ID =? AND FRIEND_ID = ?;";
         return jdbcTemplate.query(sql, UserDbService::mapRowToUser, userId);
     }
 
     @Override
     public Set<User> getAllFriends(Integer userId) {
+        if (getUserById(userId) == null) throw new NoSuchBodyException("userId пользователя отсутствует");
         String sql = "SELECT USER_ID, EMAIL, LOGIN, NAME, BIRTHDAY " +
-                     "FROM " +
-                     "(SELECT FRIEND_ID " +
-                     "FROM FRIENDSHIP " +
-                     "WHERE USER_ID = ?) AS fr " +
-                     "LEFT JOIN FILM_USER AS f ON f.USER_ID = fr.FRIEND_ID;";
+                "FROM " +
+                "(SELECT FRIEND_ID " +
+                "FROM FRIENDSHIP " +
+                "WHERE USER_ID = ?) AS fr " +
+                "LEFT JOIN FILM_USER AS f ON f.USER_ID = fr.FRIEND_ID;";
         return new HashSet<>(jdbcTemplate.query(sql, UserDbService::mapRowToUser, userId));
     }
 
     @Override
     public Set<User> getCommonFriends(Integer userId, Integer otherUserId) {
         String sql = "SELECT USER_ID, EMAIL, LOGIN, NAME, BIRTHDAY " +
-                     "FROM FILM_USER " +
-                     "WHERE USER_ID IN ( " +
-                     "SELECT FRIEND_ID " +
-                     "FROM FRIENDSHIP " +
-                     "WHERE USER_ID = ? AND FRIEND_ID IN (SELECT FRIEND_ID FROM FRIENDSHIP WHERE USER_ID = ?));";
+                "FROM FILM_USER " +
+                "WHERE USER_ID IN ( " +
+                "SELECT FRIEND_ID " +
+                "FROM FRIENDSHIP " +
+                "WHERE USER_ID = ? AND FRIEND_ID IN (SELECT FRIEND_ID FROM FRIENDSHIP WHERE USER_ID = ?));";
         return new HashSet<>(jdbcTemplate.query(sql, UserDbService::mapRowToUser, userId, otherUserId));
     }
+
+    /*Эндпоинт для удаления пользователей*/
+    @Override
+    public User delete(Integer userId) {
+        User user = getUserById(userId);
+        String sqlQuery = "DELETE FROM FILM_USER WHERE USER_ID=?";
+        jdbcTemplate.update(sqlQuery, userId);
+        return user;
+    }
+    /*Эндпоинт для удаления пользователей*/
 
     //............................ Служебные методы ..............................................
 
