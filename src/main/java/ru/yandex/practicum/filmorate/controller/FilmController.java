@@ -69,8 +69,8 @@ public class FilmController {
 
     @GetMapping("/films/popular")
     public List<Film> getMostPopularFilms (@RequestParam(defaultValue = "10") int count,
-                                           @RequestParam(value = "genreId", required=false) Integer genreId,
-                                           @RequestParam(value = "year", required=false) Integer year) {
+                                           @RequestParam(required=false) Integer genreId,
+                                           @RequestParam(required=false) Integer year) {
         if (count <= 0) {
             throw new NoSuchBodyException("count");
         }
