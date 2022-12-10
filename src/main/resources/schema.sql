@@ -81,3 +81,12 @@ CREATE TABLE IF NOT EXISTS users_reviews_like_dislike
     FOREIGN KEY (review_id) REFERENCES reviews (review_id),
     UNIQUE (user_id, review_id)
 );
+
+CREATE TABLE IF NOT EXISTS events(
+    event_id    INTEGER PRIMARY KEY AUTO_INCREMENT,
+    user_id     INTEGER REFERENCES FILM_USER(user_id),
+    entity_id   INTEGER,
+    event_type  VARCHAR(50),
+    operation   VARCHAR(50),
+    event_date  LONG
+);

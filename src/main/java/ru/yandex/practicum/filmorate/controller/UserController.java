@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.NoSuchBodyException;
 import ru.yandex.practicum.filmorate.model.*;
+import ru.yandex.practicum.filmorate.service.EventServiceImpl;
 import ru.yandex.practicum.filmorate.service.UserService;
 
 import javax.validation.Valid;
@@ -19,9 +20,11 @@ import java.util.*;
 public class UserController {
 
     private final UserService userService;
+    private final EventServiceImpl eventService;
     @Autowired
-    public UserController( @Qualifier("Secondary") UserService userService) {
+    public UserController( @Qualifier("Secondary") UserService userService, EventServiceImpl eventService) {
         this.userService = userService;
+        this.eventService = eventService;
     }
 
     @DeleteMapping("/{userId}")
@@ -83,5 +86,13 @@ public class UserController {
                     id < 0 ? "id 1-го пользователя" : "otherId 2-го пользователя");
         }
         return userService.getCommonFriends(id, otherId);
+    }
+
+    @GetMapping("/{id}/feed")
+    public List<Event> getAllEventsOfUser(@PathVariable int id){
+        if (id <= 0) {
+            throw new NoSuchBodyException("id пользователя");
+        }
+        return eventService.getAllEventsOfUser(id);
     }
 }

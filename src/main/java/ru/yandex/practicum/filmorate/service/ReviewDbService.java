@@ -7,6 +7,7 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.NoSuchBodyException;
+import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.model.ReviewLikeDislike;
 
@@ -23,13 +24,15 @@ public class ReviewDbService implements ReviewService {
     protected final FilmService filmService;
     protected final UserService userService;
     private final JdbcTemplate jdbcTemplate;
+    private final EventServiceImpl eventService;
 
     @Autowired
     public ReviewDbService(JdbcTemplate jdbcTemplate, @Qualifier("priority") FilmService filmService,
-                           @Qualifier("priority") UserService userService) {
+                           @Qualifier("priority") UserService userService, EventServiceImpl eventService) {
         this.jdbcTemplate = jdbcTemplate;
         this.filmService = filmService;
         this.userService = userService;
+        this.eventService = eventService;
     }
 
     private static Review mapRowToReview(ResultSet resultSet, int rowNum) throws SQLException {
@@ -63,15 +66,22 @@ public class ReviewDbService implements ReviewService {
 
         review.setReviewId(keyHolder.getKey().intValue());
 
+        final Event event = eventService.saveEvent("REVIEW", "ADD", review.getUserId(), review.getReviewId());
+        eventService.createEvent(event);
+
         return review;
     }
 
     @Override
     public Review editReview(Review review) {
         checkIfReviewExists(review.getReviewId());
-
         String query = "UPDATE reviews " + "SET content = ?, is_positive = ? " + "WHERE review_id = ?;";
         jdbcTemplate.update(query, review.getContent(), review.getIsPositive(), review.getReviewId());
+
+        int id = jdbcTemplate.queryForObject("SELECT USER_ID FROM REVIEWS WHERE REVIEW_ID =?",
+                new Object[]{review.getReviewId()}, Integer.class);
+        final Event event = eventService.saveEvent("REVIEW", "UPDATE", id, review.getReviewId());
+        eventService.createEvent(event);
         return review;
     }
 
@@ -82,6 +92,9 @@ public class ReviewDbService implements ReviewService {
         jdbcTemplate.update(sql, id);
         String sql2 = "DELETE " + "FROM reviews " + "WHERE review_id = ?;";
         jdbcTemplate.update(sql2, id);
+
+        final Event event = eventService.saveEvent("REVIEW", "REMOVE", review.getUserId(), review.getReviewId());
+        eventService.createEvent(event);
         return review;
     }
 

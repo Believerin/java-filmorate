@@ -17,11 +17,13 @@ import static ru.yandex.practicum.filmorate.model.Film.CINEMA_START;
 public class FilmServiceImpl implements FilmService {
 
     private final FilmDbService filmDbService;
+    private final EventServiceImpl eventService;
 
     @Autowired
-    public FilmServiceImpl(FilmDbService filmDbService) {
+    public FilmServiceImpl(FilmDbService filmDbService, EventServiceImpl eventService) {
 
         this.filmDbService = filmDbService;
+        this.eventService = eventService;
     }
 
     public Collection<Film> findAll() {
@@ -92,11 +94,15 @@ public class FilmServiceImpl implements FilmService {
 
     public Film addLike(Integer filmId, Integer userId) {
         filmDbService.addLike(filmId, userId);
+        final Event event = eventService.saveEvent("LIKE", "ADD", userId, filmId);
+        eventService.createEvent(event);
         return filmDbService.getFilmById(filmId);
     }
 
     public Film deleteLike(Integer filmId, Integer userId) {
         filmDbService.deleteLike(filmId, userId);
+        final Event event = eventService.saveEvent("LIKE", "REMOVE", userId, filmId);
+        eventService.createEvent(event);
         return filmDbService.getFilmById(filmId);
     }
 
