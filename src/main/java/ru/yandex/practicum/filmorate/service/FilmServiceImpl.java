@@ -130,4 +130,10 @@ public class FilmServiceImpl implements FilmService {
         }
     }
     /*Эндпоинт для удаления пользователей*/
+
+    @Override
+    public List<Film> searchFilms(String query, boolean isDirector, boolean isTitle) {
+        return filmDbService.searchFilms(query, isDirector, isTitle);
+    }
+
 }
