@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NoSuchBodyException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.Collection;
@@ -17,10 +18,12 @@ import java.util.Set;
 public class UserServiceImpl implements UserService {
 
     private final UserDbService userDbService;
+    private final EventServiceImpl eventService;
 
     @Autowired
-    public UserServiceImpl(UserDbService userDbService) {
+    public UserServiceImpl(UserDbService userDbService, EventServiceImpl eventService) {
         this.userDbService = userDbService;
+        this.eventService = eventService;
     }
 
     public Collection<User> findAll() {
@@ -55,10 +58,14 @@ public class UserServiceImpl implements UserService {
     }
 
     public List<User> addFriend(Integer userId, Integer friendId) {
+        final Event event = eventService.saveEvent("FRIEND", "ADD", userId, friendId);
+        eventService.createEvent(event);
         return userDbService.addFriend(userId, friendId);
     }
 
     public List<User> deleteFriend(Integer userId, Integer friendId) {
+        final Event event = eventService.saveEvent("FRIEND", "REMOVE", userId, friendId);
+        eventService.createEvent(event);
         return userDbService.deleteFriend(userId, friendId);
     }
 
