@@ -5,7 +5,6 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.exception.NoSuchBodyException;
 import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.status.Genres;
 import ru.yandex.practicum.filmorate.status.Rating;
@@ -273,6 +272,41 @@ public class FilmDbService implements FilmService {
         return film;
     }
     /*Эндпоинт для удаления пользователей*/
+
+    /**
+     * Поиск фильмов по названию, по режиссеру или названию/режиссеру
+     */
+    @Override
+    public List<Film> searchFilms(String query, boolean isDirector, boolean isTitle) {
+        List<Integer> filmsId = List.of();
+        List<Film> films = new ArrayList<>();
+        String groupOrder = " GROUP BY f.FILM_ID " +
+                "ORDER BY COUNT(l.USER_ID) DESC";
+        StringBuilder sql = new StringBuilder().append("SELECT f.FILM_ID FROM FILM f " +
+                "LEFT JOIN DIRECTORS_FILM df ON f.FILM_ID = df.FILM_ID " +
+                "LEFT JOIN DIRECTORS d ON df.DIRECTOR_ID = d.DIRECTOR_ID " +
+                "LEFT JOIN LIKES l ON f.FILM_ID = l.FILM_ID " +
+                "WHERE ");
+        if (isTitle & isDirector) {
+            sql.append("REGEXP_LIKE(f.FILM_NAME, ?, 'i') OR REGEXP_LIKE(DIRECTOR_NAME, ?, 'i')");
+            sql.append(groupOrder);
+            filmsId = jdbcTemplate.queryForList(sql.toString(), Integer.class, query, query);
+        } else if (isTitle) {
+            sql.append("REGEXP_LIKE(f.FILM_NAME, ?, 'i')");
+            sql.append(groupOrder);
+            filmsId = jdbcTemplate.queryForList(sql.toString(), Integer.class, query);
+        } else if (isDirector) {
+            sql.append("REGEXP_LIKE(DIRECTOR_NAME, ?, 'i')");
+            sql.append(groupOrder);
+            filmsId = jdbcTemplate.queryForList(sql.toString(), Integer.class, query);
+        }
+        if (!filmsId.isEmpty()) {
+            for (int i : filmsId) {
+                films.add(getFilmById(i));
+            }
+        }
+        return films;
+    }
 
     //............................ Служебные методы ..............................................
 

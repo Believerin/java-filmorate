@@ -3,10 +3,9 @@ package ru.yandex.practicum.filmorate.controller;
 import lombok.extern.slf4j.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.NoSuchBodyException;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.service.DirectorService;
 import ru.yandex.practicum.filmorate.service.FilmService;
@@ -14,7 +13,6 @@ import ru.yandex.practicum.filmorate.service.FilmService;
 import javax.validation.Valid;
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 
 import static ru.yandex.practicum.filmorate.model.Film.CINEMA_START;
 
@@ -90,7 +88,6 @@ public class FilmController {
         }
     }
 
-
     @GetMapping("/mpa/{id}")
     public Mpa getMpa(@PathVariable Integer id) {
         if (id <= 0) {
@@ -146,5 +143,26 @@ public class FilmController {
                 return List.of();
         }
     }
-    //----------------------------------------------------------------  
+
+    //------Эндпоинт для поиска фильмов по названию и/или режиссеру
+    @GetMapping("/films/search")
+    public Collection<Film> getFilmsByTitleDirectorOrBoth(@RequestParam String query, @RequestParam String by) {
+        boolean isDirector = false, isTitle = false;
+        if (query.isEmpty() || query.isBlank()) {
+            throw new ValidationException("query");
+        }
+        if (by.isEmpty() || by.isBlank()) {
+            throw new ValidationException("by");
+        }
+        if (by.contains("director")) {
+            isDirector = true;
+        }
+        if (by.contains("title")) {
+            isTitle = true;
+        }
+        if (!isDirector & !isTitle) {
+            throw new ValidationException("by");
+        }
+        return filmService.searchFilms(query, isDirector, isTitle);
+    }
 }

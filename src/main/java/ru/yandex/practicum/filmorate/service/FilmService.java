@@ -6,7 +6,6 @@ import ru.yandex.practicum.filmorate.model.Mpa;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 
 public interface FilmService {
 
@@ -37,7 +36,9 @@ public interface FilmService {
     List<Film> getCommonFilms(int userId, int friendId);
 
     /*Эндпоинт для удаления пользователей*/
-    public Film delete(Integer filmId);
+    Film delete(Integer filmId);
     /*Эндпоинт для удаления пользователей*/
+
+    List<Film> searchFilms(String query, boolean isDirector, boolean isTitle);
 
 }
