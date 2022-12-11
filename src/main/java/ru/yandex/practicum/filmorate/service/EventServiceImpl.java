@@ -34,8 +34,8 @@ public class EventServiceImpl implements EventService{
         return eventDbService.createEvent(event);
     }
 
-    public Event get(int eventId){
-        return eventDbService.get(eventId);
+    public Event getEvent(int eventId){
+        return eventDbService.getEvent(eventId);
     }
 
     public List<Event> getAllEventsOfUser(int userId){

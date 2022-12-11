@@ -6,7 +6,7 @@ import java.util.Collection;
 
 public interface EventService {
     Event createEvent(Event event);
-    Event get(int eventId);
+    Event getEvent(int eventId);
     Collection<Event> getAllEventsOfUser(int userId);
 
 }

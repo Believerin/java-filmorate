@@ -42,7 +42,7 @@ public class EventDbService implements EventService{
         }
 
     @Override
-    public Event get(int eventId){
+    public Event getEvent(int eventId){
         String sqlQuery = "SELECT * FROM EVENTS WHERE EVENT_ID =?;";
         return jdbcTemplate.queryForObject(sqlQuery, EventDbService::mapRowToEvent, eventId);
     }
