@@ -1,5 +1,5 @@
 DROP TABLE IF EXISTS
-    mpa, film, film_user, genre, friendship, likes, genre_film, DIRECTORS, DIRECTORS_FILM, reviews, users_reviews_like_dislike;
+    mpa, film, film_user, genre, friendship, likes, genre_film, DIRECTORS, DIRECTORS_FILM, reviews, users_reviews_like_dislike, events CASCADE;
 
 CREATE TABLE IF NOT EXISTS mpa (
     mpa_id int PRIMARY KEY,
@@ -84,7 +84,7 @@ CREATE TABLE IF NOT EXISTS users_reviews_like_dislike
 
 CREATE TABLE IF NOT EXISTS events(
     event_id    INTEGER PRIMARY KEY AUTO_INCREMENT,
-    user_id     INTEGER REFERENCES FILM_USER(user_id),
+    user_id     INTEGER REFERENCES FILM_USER(user_id) ON DELETE CASCADE,
     entity_id   INTEGER,
     event_type  VARCHAR(50),
     operation   VARCHAR(50),
