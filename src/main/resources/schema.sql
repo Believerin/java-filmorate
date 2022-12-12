@@ -1,5 +1,5 @@
 DROP TABLE IF EXISTS
-    mpa, film, film_user, genre, friendship, likes, genre_film, DIRECTORS, DIRECTORS_FILM, reviews, users_reviews_like_dislike;
+    mpa, film, film_user, genre, friendship, likes, genre_film, DIRECTORS, DIRECTORS_FILM, reviews, users_reviews_like_dislike CASCADE;
 
 CREATE TABLE IF NOT EXISTS mpa (
     mpa_id int PRIMARY KEY,
