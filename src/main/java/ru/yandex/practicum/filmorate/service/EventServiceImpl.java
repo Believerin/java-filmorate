@@ -6,8 +6,10 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Event;
+import ru.yandex.practicum.filmorate.storage.EventStorage;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -15,13 +17,14 @@ import java.util.stream.Collectors;
 @Service
 public class EventServiceImpl implements EventService{
 
-    private final EventDbService eventDbService;
+    private final EventStorage eventStorage;
 
     @Autowired
-    public EventServiceImpl(EventDbService eventDbService){
-        this.eventDbService = eventDbService;
+    public EventServiceImpl(EventStorage eventStorage){
+        this.eventStorage = eventStorage;
     }
 
+    @Override
     public Event saveEvent(String type, String operation, int id, int entityId){
         final Event event = addEvent(id);
         event.setEventType(type);
@@ -30,16 +33,18 @@ public class EventServiceImpl implements EventService{
         return event;
     }
 
+    @Override
     public Event createEvent(Event event){
-        return eventDbService.createEvent(event);
+        return eventStorage.createEvent(event);
     }
-
+    @Override
     public Event getEvent(int eventId){
-        return eventDbService.getEvent(eventId);
+        return eventStorage.getEvent(eventId);
     }
 
+    @Override
     public List<Event> getAllEventsOfUser(int userId){
-        return eventDbService.getAllEventsOfUser(userId).stream().collect(Collectors.toList());
+        return new ArrayList<>(eventStorage.getAllEventsOfUser(userId));
     }
 
     //............................ Служебные методы ..............................................

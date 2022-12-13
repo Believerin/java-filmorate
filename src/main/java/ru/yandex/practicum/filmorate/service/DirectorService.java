@@ -23,9 +23,6 @@ public interface DirectorService {
     void removeDirector(int directorId);
     /**Связать режиссера и фильм в таблице DIRECTORS_FILM*/
     boolean connectFilmAndDirector(int filmId, int directorId);
-    /**Удалить пару режиссер/фильм из таблицы DIRECTORS_FILM*/
-    boolean disconnectFilmAndDirector(int filmId, int directorId);
-    /**Вывести список фильмов режиссера DIRECTOR_ID, отсортированных по количеству лайков*/
     Collection<Film> getFilmsByDirectorSortByLikes(int directorId);
     /**Вывести список фильмов режиссера DIRECTOR_ID, отсортированных по году выпуска*/
     Collection<Film> getFilmsByDirectorSortByReleaseYear(int directorId);

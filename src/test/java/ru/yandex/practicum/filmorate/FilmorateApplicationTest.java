@@ -7,8 +7,8 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.context.SpringBootTest;
 
 import ru.yandex.practicum.filmorate.model.*;
-import ru.yandex.practicum.filmorate.service.FilmDbService;
-import ru.yandex.practicum.filmorate.service.UserDbService;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
 import ru.yandex.practicum.filmorate.status.*;
 
 import java.time.LocalDate;
@@ -27,8 +27,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 class FilmorateApplicationTest {
 
-    private final UserDbService userService;
-    private final FilmDbService filmService;
+    private final UserStorage userService;
+    private final FilmStorage filmService;
 
     User testUser;
     User testUpdatedUser;

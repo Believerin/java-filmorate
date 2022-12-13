@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.NoSuchBodyException;
 import ru.yandex.practicum.filmorate.model.*;
+import ru.yandex.practicum.filmorate.service.EventService;
 import ru.yandex.practicum.filmorate.service.EventServiceImpl;
 import ru.yandex.practicum.filmorate.service.UserService;
 
@@ -20,9 +21,9 @@ import java.util.*;
 public class UserController {
 
     private final UserService userService;
-    private final EventServiceImpl eventService;
+    private final EventService eventService;
     @Autowired
-    public UserController( @Qualifier("Secondary") UserService userService, EventServiceImpl eventService) {
+    public UserController(UserService userService, EventService eventService) {
         this.userService = userService;
         this.eventService = eventService;
     }

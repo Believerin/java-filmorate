@@ -25,7 +25,7 @@ public class FilmController {
     private final DirectorService directorService;
 
     @Autowired
-    public FilmController(@Qualifier("Secondary") FilmService filmService, DirectorService directorService) {
+    public FilmController(FilmService filmService, DirectorService directorService) {
         this.filmService = filmService;
         this.directorService = directorService;
     }

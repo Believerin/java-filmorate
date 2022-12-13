@@ -2,10 +2,12 @@ package ru.yandex.practicum.filmorate.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NoSuchBodyException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.*;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import java.util.Collection;
 import java.util.List;
@@ -13,25 +15,24 @@ import java.util.List;
 import static ru.yandex.practicum.filmorate.model.Film.CINEMA_START;
 
 @Service
-@Qualifier("Secondary")
+@Primary
 public class FilmServiceImpl implements FilmService {
 
-    private final FilmDbService filmDbService;
+    private final FilmStorage filmStorage;
     private final EventServiceImpl eventService;
 
     @Autowired
-    public FilmServiceImpl(FilmDbService filmDbService, EventServiceImpl eventService) {
-
-        this.filmDbService = filmDbService;
+    public FilmServiceImpl(FilmStorage filmStorage, EventServiceImpl eventService) {
+        this.filmStorage = filmStorage;
         this.eventService = eventService;
     }
 
     public Collection<Film> findAll() {
-        return filmDbService.findAll();
+        return filmStorage.findAll();
     }
 
     public Film getFilmById(Integer id) {
-        Film film = filmDbService.getFilmById(id);
+        Film film = filmStorage.getFilmById(id);
         if (film != null) {
             return film;
         } else {
@@ -41,7 +42,7 @@ public class FilmServiceImpl implements FilmService {
 
     public Film createFilm(Film film) {
         if (film.getReleaseDate().isAfter(CINEMA_START)) {
-            Film o = filmDbService.createFilm(film);
+            Film o = filmStorage.createFilm(film);
             if (o == null) {
                 throw new ValidationException("Фильм уже существует");
             } else {
@@ -54,10 +55,10 @@ public class FilmServiceImpl implements FilmService {
 
     public Film updateFilm(Film film) {
         if (film.getReleaseDate().isAfter(CINEMA_START)) {
-            if (filmDbService.updateFilm(film) == null) {
+            if (filmStorage.updateFilm(film) == null) {
                 throw new NoSuchBodyException(String.format("Фильм с id %s отсутствует", film.getId()));
             } else {
-                return filmDbService.getFilmById(film.getId());
+                return filmStorage.getFilmById(film.getId());
             }
         } else {
             throw new ValidationException("Данные фильма не соответствуют критериям");
@@ -65,7 +66,7 @@ public class FilmServiceImpl implements FilmService {
     }
 
     public Mpa getMpa (int id) {
-        Mpa mpa = filmDbService.getMpa(id);
+        Mpa mpa = filmStorage.getMpa(id);
         if (mpa != null) {
             return mpa;
         } else {
@@ -74,12 +75,12 @@ public class FilmServiceImpl implements FilmService {
     }
 
     public Collection<Mpa> findAllMpa() {
-        return filmDbService.findAllMpa();
+        return filmStorage.findAllMpa();
     }
 
     @Override
     public Genre getGenre(int id) {
-        Genre genre = filmDbService.getGenre(id);
+        Genre genre = filmStorage.getGenre(id);
         if (genre != null) {
             return genre;
         } else {
@@ -89,40 +90,40 @@ public class FilmServiceImpl implements FilmService {
 
     @Override
     public Collection<Genre> findAllGenres() {
-        return filmDbService.findAllGenres();
+        return filmStorage.findAllGenres();
     }
 
     public Film addLike(Integer filmId, Integer userId) {
-        filmDbService.addLike(filmId, userId);
+        filmStorage.addLike(filmId, userId);
         final Event event = eventService.saveEvent("LIKE", "ADD", userId, filmId);
         eventService.createEvent(event);
-        return filmDbService.getFilmById(filmId);
+        return filmStorage.getFilmById(filmId);
     }
 
     public Film deleteLike(Integer filmId, Integer userId) {
-        filmDbService.deleteLike(filmId, userId);
+        filmStorage.deleteLike(filmId, userId);
         final Event event = eventService.saveEvent("LIKE", "REMOVE", userId, filmId);
         eventService.createEvent(event);
-        return filmDbService.getFilmById(filmId);
+        return filmStorage.getFilmById(filmId);
     }
 
     public List<Film> getMostPopularFilms(int count) {
-        return filmDbService.getMostPopularFilms(count);
+        return filmStorage.getMostPopularFilms(count);
     }
 
     @Override
     public List<Film> getMostPopularFilmsByGenreOrYear(Integer count, Integer genreId, Integer year) {
-        return filmDbService.getMostPopularFilmsByGenreOrYear(count, genreId,  year);
+        return filmStorage.getMostPopularFilmsByGenreOrYear(count, genreId,  year);
     }
 
     public List<Film> getCommonFilms(int userId, int friendId) {
-        return filmDbService.getCommonFilms(userId, friendId);
+        return filmStorage.getCommonFilms(userId, friendId);
     }
 
     /*Эндпоинт для удаления пользователей*/
     @Override
     public Film delete(Integer filmId) {
-        Film film = filmDbService.delete(filmId);
+        Film film = filmStorage.delete(filmId);
         if (film == null) {
             throw new NoSuchBodyException(String.format("Фильм с id %s отсутствует", filmId));
         } else {
@@ -133,7 +134,7 @@ public class FilmServiceImpl implements FilmService {
 
     @Override
     public List<Film> searchFilms(String query, boolean isDirector, boolean isTitle) {
-        return filmDbService.searchFilms(query, isDirector, isTitle);
+        return filmStorage.searchFilms(query, isDirector, isTitle);
     }
 
 }

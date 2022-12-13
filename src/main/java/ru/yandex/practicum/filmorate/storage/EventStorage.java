@@ -1,26 +1,27 @@
-package ru.yandex.practicum.filmorate.service;
+package ru.yandex.practicum.filmorate.storage;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.Event;
+import ru.yandex.practicum.filmorate.service.EventService;
 
 import java.sql.*;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.Objects;
 
-@Component
-public class EventDbService implements EventService{
+@Repository
+public class EventStorage {
 
     private final JdbcTemplate jdbcTemplate;
 
-    public EventDbService(JdbcTemplate jdbcTemplate){
+    public EventStorage(JdbcTemplate jdbcTemplate){
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    @Override
     public Event createEvent(Event event){
             String sqlQuery = "INSERT INTO EVENTS (user_id, entity_id, event_type, operation, event_date) " +
                     "VALUES (?, ?, ?, ?, ?);";
@@ -41,15 +42,14 @@ public class EventDbService implements EventService{
                     .orElse(null);
         }
 
-    @Override
     public Event getEvent(int eventId){
         String sqlQuery = "SELECT * FROM EVENTS WHERE EVENT_ID =?;";
-        return jdbcTemplate.queryForObject(sqlQuery, EventDbService::mapRowToEvent, eventId);
+        return jdbcTemplate.queryForObject(sqlQuery, EventStorage::mapRowToEvent, eventId);
     }
-    @Override
+
     public Collection<Event> getAllEventsOfUser(int userId){
         String sqlQuery = "SELECT * FROM EVENTS WHERE USER_ID = ?;";
-        return jdbcTemplate.query(sqlQuery, EventDbService::mapRowToEvent, userId);
+        return jdbcTemplate.query(sqlQuery, EventStorage::mapRowToEvent, userId);
     }
 
     //............................ Служебные методы ..............................................
