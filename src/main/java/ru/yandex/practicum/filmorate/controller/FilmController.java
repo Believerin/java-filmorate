@@ -51,8 +51,8 @@ public class FilmController {
     @PutMapping("/films/{id}/like/{userId}")
     public Film addLike(@PathVariable Integer id, @PathVariable Integer userId) {
         if (id <= 0 || userId <= 0) {
-            throw new NoSuchBodyException(id < 0 & userId < 0 ? "id фильма и userId пользователя"
-                    : id < 0 ? "id фильма" : "userId пользователя");
+            throw new NoSuchBodyException(id < 0 & userId < 0 ? "id фильма и userId пользователя отсутствует"
+                    : id < 0 ? "id фильма" : "userId пользователя отсутствует");
         }
         return filmService.addLike(id, userId);
     }
@@ -60,8 +60,8 @@ public class FilmController {
     @DeleteMapping("/films/{id}/like/{userId}")
     public Film deleteLike(@PathVariable Integer id, @PathVariable Integer userId) {
         if (id <= 0 || userId <= 0) {
-            throw new NoSuchBodyException(id < 0 & userId < 0 ? "id фильма и userId пользователя"
-                    : id < 0 ? "id фильма" : "userId пользователя");
+            throw new NoSuchBodyException(id < 0 & userId < 0 ? "id фильма и userId пользователя отсутствует"
+                    : id < 0 ? "id фильма отсутствует" : "userId пользователя отсутствует");
         }
         return filmService.deleteLike(id, userId);
     }
@@ -72,21 +72,16 @@ public class FilmController {
                                            @RequestParam(required=false) @Min(1) @Max(6) Integer year) {
         if (genreId == null && year == null) {
             return filmService.getMostPopularFilms(count);
-        } else {
-            if (genreId !=null) {
-                throw new NoSuchBodyException("genreId");
-            }
-            if (year <= CINEMA_START.getYear()) {
-                throw new NoSuchBodyException("year");
-            }
-            return filmService.getMostPopularFilmsByGenreOrYear(count, genreId, year);
+        } else if (year <= CINEMA_START.getYear()) {
+            throw new NoSuchBodyException("year отсутствует");
         }
+        return filmService.getMostPopularFilmsByGenreOrYear(count, genreId, year);
     }
 
     @GetMapping("/mpa/{id}")
     public Mpa getMpa(@PathVariable Integer id) {
         if (id <= 0) {
-            throw new NoSuchBodyException("id");
+            throw new NoSuchBodyException("id отсутствует");
         }
         return filmService.getMpa(id);
     }
@@ -99,7 +94,7 @@ public class FilmController {
     @GetMapping("/genres/{id}")
     public Genre getGenre(@PathVariable Integer id) {
         if (id <= 0) {
-            throw new NoSuchBodyException("id");
+            throw new NoSuchBodyException("id отсутствует");
         }
         return filmService.getGenre(id);
     }
@@ -125,9 +120,9 @@ public class FilmController {
     @GetMapping("/films/director/{directorId}")
     public Collection<Film> getDirectorFilmsSortByYearOrLikes(@PathVariable int directorId, @RequestParam String sortBy) {
         if (directorService.getDirectorById(directorId) == null) {
-            throw new NoSuchBodyException("id");
+            throw new NoSuchBodyException("id отсутствует");
         } else if (!sortBy.equals("year") & !sortBy.equals("likes")) {
-            throw new NoSuchBodyException("sortBy");
+            throw new NoSuchBodyException("sortBy отсутствует");
         }
         switch (sortBy) {
             case "year":

@@ -56,8 +56,8 @@ public class UserController {
     @PutMapping("/{id}/friends/{friendId}")
     public List<User> addFriend(@PathVariable Integer id, @PathVariable Integer friendId) {
         if (id <= 0 || friendId <= 0) {
-            throw new NoSuchBodyException(id < 0 & friendId < 0 ? "id пользователя и friendId друга"
-                    : id < 0 ? "id пользователя" : "friendId друга");
+            throw new NoSuchBodyException(id < 0 & friendId < 0 ? "id пользователя и friendId друга отсутствует"
+                    : id < 0 ? "id пользователя отсутствует" : "friendId друга отсутствует");
         }
         return userService.addFriend(id, friendId);
     }
@@ -65,8 +65,8 @@ public class UserController {
     @DeleteMapping("/{id}/friends/{friendId}")
     public List<User> deleteFriend(@PathVariable Integer id, @PathVariable Integer friendId) {
         if (id <= 0 || friendId <= 0) {
-            throw new NoSuchBodyException(id < 0 & friendId < 0 ? "id пользователя и friendId друга"
-                    : id < 0 ? "id пользователя" : "friendId друга");
+            throw new NoSuchBodyException(id < 0 & friendId < 0 ? "id пользователя и friendId друга отсутствует"
+                    : id < 0 ? "id пользователя отсутствует" : "friendId друга отсутствует");
         }
         return userService.deleteFriend(id, friendId);
     }
@@ -75,7 +75,7 @@ public class UserController {
     @GetMapping("/{id}/friends")
     public Set<User> getAllFriends(@PathVariable Integer id) {
         if (id <= 0) {
-            throw new NoSuchBodyException("id пользователя");
+            throw new NoSuchBodyException("id пользователя отсутствует");
         }
         return userService.getAllFriends(id);
     }
@@ -83,8 +83,8 @@ public class UserController {
     @GetMapping("/{id}/friends/common/{otherId}")
     public Set<User> getCommonFriends(@PathVariable Integer id, @PathVariable Integer otherId) {
         if (id <= 0 || otherId <= 0) {
-            throw new NoSuchBodyException(id < 0 & otherId < 0 ? "id 1-го пользователя и otherId 2-го пользователя":
-                    id < 0 ? "id 1-го пользователя" : "otherId 2-го пользователя");
+            throw new NoSuchBodyException(id < 0 & otherId < 0 ? "id 1-го пользователя и otherId 2-го пользователя отсутствует":
+                    id < 0 ? "id 1-го пользователя отсутствует" : "otherId 2-го пользователя отсутствует");
         }
         return userService.getCommonFriends(id, otherId);
     }
@@ -92,7 +92,7 @@ public class UserController {
     @GetMapping("/{id}/feed")
     public List<Event> getAllEventsOfUser(@PathVariable int id){
         if (id <= 0) {
-            throw new NoSuchBodyException("id пользователя");
+            throw new NoSuchBodyException("id пользователя отсутствует");
         }
         return eventService.getAllEventsOfUser(id);
     }
