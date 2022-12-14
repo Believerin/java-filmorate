@@ -11,7 +11,6 @@ import ru.yandex.practicum.filmorate.storage.EventStorage;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 
 @Service
@@ -25,7 +24,7 @@ public class EventServiceImpl implements EventService{
     }
 
     @Override
-    public Event saveEvent(String type, String operation, int id, int entityId){
+    public Event save(String type, String operation, int id, int entityId){
         final Event event = addEvent(id);
         event.setEventType(type);
         event.setOperation(operation);
@@ -34,12 +33,12 @@ public class EventServiceImpl implements EventService{
     }
 
     @Override
-    public Event createEvent(Event event){
-        return eventStorage.createEvent(event);
+    public Event create(Event event){
+        return eventStorage.create(event);
     }
     @Override
     public Event getEvent(int eventId){
-        return eventStorage.getEvent(eventId);
+        return eventStorage.get(eventId);
     }
 
     @Override

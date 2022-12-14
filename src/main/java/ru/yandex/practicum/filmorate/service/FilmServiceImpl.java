@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NoSuchBodyException;
@@ -95,15 +94,15 @@ public class FilmServiceImpl implements FilmService {
 
     public Film addLike(Integer filmId, Integer userId) {
         filmStorage.addLike(filmId, userId);
-        final Event event = eventService.saveEvent("LIKE", "ADD", userId, filmId);
-        eventService.createEvent(event);
+        final Event event = eventService.save("LIKE", "ADD", userId, filmId);
+        eventService.create(event);
         return filmStorage.getFilmById(filmId);
     }
 
     public Film deleteLike(Integer filmId, Integer userId) {
         filmStorage.deleteLike(filmId, userId);
-        final Event event = eventService.saveEvent("LIKE", "REMOVE", userId, filmId);
-        eventService.createEvent(event);
+        final Event event = eventService.save("LIKE", "REMOVE", userId, filmId);
+        eventService.create(event);
         return filmStorage.getFilmById(filmId);
     }
 

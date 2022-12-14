@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NoSuchBodyException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
@@ -57,14 +56,14 @@ public class UserServiceImpl implements UserService {
     }
 
     public List<User> addFriend(Integer userId, Integer friendId) {
-        final Event event = eventService.saveEvent("FRIEND", "ADD", userId, friendId);
-        eventService.createEvent(event);
+        final Event event = eventService.save("FRIEND", "ADD", userId, friendId);
+        eventService.create(event);
         return userStorage.addFriend(userId, friendId);
     }
 
     public List<User> deleteFriend(Integer userId, Integer friendId) {
-        final Event event = eventService.saveEvent("FRIEND", "REMOVE", userId, friendId);
-        eventService.createEvent(event);
+        final Event event = eventService.save("FRIEND", "REMOVE", userId, friendId);
+        eventService.create(event);
         return userStorage.deleteFriend(userId, friendId);
     }
 

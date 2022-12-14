@@ -1,8 +1,6 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.*;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.NoSuchBodyException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
@@ -11,6 +9,7 @@ import ru.yandex.practicum.filmorate.service.DirectorService;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import javax.validation.Valid;
+import javax.validation.constraints.*;
 import java.util.Collection;
 import java.util.List;
 
@@ -24,7 +23,6 @@ public class FilmController {
     private final FilmService filmService;
     private final DirectorService directorService;
 
-    @Autowired
     public FilmController(FilmService filmService, DirectorService directorService) {
         this.filmService = filmService;
         this.directorService = directorService;
@@ -69,19 +67,16 @@ public class FilmController {
     }
 
     @GetMapping("/films/popular")
-    public List<Film> getMostPopularFilms (@RequestParam(defaultValue = "10") int count,
+    public List<Film> getMostPopularFilms (@RequestParam(defaultValue = "10") @Min(1) int count,
                                            @RequestParam(required=false) Integer genreId,
-                                           @RequestParam(required=false) Integer year) {
-        if (count <= 0) {
-            throw new NoSuchBodyException("count");
-        }
+                                           @RequestParam(required=false) @Min(1) @Max(6) Integer year) {
         if (genreId == null && year == null) {
             return filmService.getMostPopularFilms(count);
         } else {
-            if (genreId !=null && (genreId < 1 || genreId > 6)) {
+            if (genreId !=null) {
                 throw new NoSuchBodyException("genreId");
             }
-            if (year !=null && year <= CINEMA_START.getYear()) {
+            if (year <= CINEMA_START.getYear()) {
                 throw new NoSuchBodyException("year");
             }
             return filmService.getMostPopularFilmsByGenreOrYear(count, genreId, year);

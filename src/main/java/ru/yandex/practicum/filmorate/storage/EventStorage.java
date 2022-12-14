@@ -3,10 +3,8 @@ package ru.yandex.practicum.filmorate.storage;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.Event;
-import ru.yandex.practicum.filmorate.service.EventService;
 
 import java.sql.*;
 import java.time.Instant;
@@ -22,7 +20,7 @@ public class EventStorage {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    public Event createEvent(Event event){
+    public Event create(Event event){
             String sqlQuery = "INSERT INTO EVENTS (user_id, entity_id, event_type, operation, event_date) " +
                     "VALUES (?, ?, ?, ?, ?);";
             KeyHolder keyHolder = new GeneratedKeyHolder();
@@ -42,7 +40,7 @@ public class EventStorage {
                     .orElse(null);
         }
 
-    public Event getEvent(int eventId){
+    public Event get(int eventId){
         String sqlQuery = "SELECT * FROM EVENTS WHERE EVENT_ID =?;";
         return jdbcTemplate.queryForObject(sqlQuery, EventStorage::mapRowToEvent, eventId);
     }

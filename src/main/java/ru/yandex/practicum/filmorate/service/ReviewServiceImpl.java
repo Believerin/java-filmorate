@@ -34,8 +34,8 @@ public class ReviewServiceImpl implements ReviewService {
             throw new NoSuchBodyException("ресурс");
         }
         Review ansReview = reviewStorage.addReview(review);
-        final Event event = eventService.saveEvent("REVIEW", "ADD", ansReview.getUserId(), ansReview.getReviewId());
-        eventService.createEvent(event);
+        final Event event = eventService.save("REVIEW", "ADD", ansReview.getUserId(), ansReview.getReviewId());
+        eventService.create(event);
         return ansReview;
 
     }
@@ -43,16 +43,16 @@ public class ReviewServiceImpl implements ReviewService {
     @Override
     public Review editReview(Review review) {
         Review ansReview = reviewStorage.editReview(review);
-        final Event event = eventService.saveEvent("REVIEW", "UPDATE", ansReview.getUserId(), review.getReviewId());
-        eventService.createEvent(event);
+        final Event event = eventService.save("REVIEW", "UPDATE", ansReview.getUserId(), review.getReviewId());
+        eventService.create(event);
         return ansReview;
     }
 
     @Override
     public Review deleteReview(int id) {
         Review ansReview = reviewStorage.deleteReview(id);
-        final Event event = eventService.saveEvent("REVIEW", "REMOVE", ansReview.getUserId(), ansReview.getReviewId());
-        eventService.createEvent(event);
+        final Event event = eventService.save("REVIEW", "REMOVE", ansReview.getUserId(), ansReview.getReviewId());
+        eventService.create(event);
         return ansReview;
     }
 
