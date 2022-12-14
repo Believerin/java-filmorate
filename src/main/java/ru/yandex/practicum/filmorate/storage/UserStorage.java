@@ -1,45 +1,44 @@
-package ru.yandex.practicum.filmorate.service;
+package ru.yandex.practicum.filmorate.storage;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.exception.NoSuchBodyException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.UserService;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.*;
 
-@Component
-@Qualifier("priority")
-public class UserDbService implements UserService {
+@Repository
+public class UserStorage{
 
     private final JdbcTemplate jdbcTemplate;
 
-    public UserDbService(JdbcTemplate jdbcTemplate) {
+    public UserStorage(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    @Override
+
     public Collection<User> findAll() {
         String sql = "SELECT * " +
                 "FROM FILM_USER;";
-        return jdbcTemplate.query(sql, UserDbService::mapRowToUser);
+        return jdbcTemplate.query(sql, UserStorage::mapRowToUser);
     }
 
-    @Override
     public User getUserById(Integer id) {
         String sql = "SELECT * " +
                 "FROM FILM_USER " +
                 "WHERE USER_ID = ?;";
         try {
-            return jdbcTemplate.queryForObject(sql, UserDbService::mapRowToUser, id);
+            return jdbcTemplate.queryForObject(sql, UserStorage::mapRowToUser, id);
         } catch (EmptyResultDataAccessException e) {
             return null;
         }
     }
 
-    @Override
     public User createUser(User user) {
         String sql = "INSERT INTO FILM_USER (EMAIL, LOGIN, NAME, BIRTHDAY) " +
                 "VALUES (?, ?, ?, ?);";
@@ -51,7 +50,6 @@ public class UserDbService implements UserService {
                 .orElse(null);
     }
 
-    @Override
     public User updateUser(User user) {
         String sql = "UPDATE FILM_USER " +
                 "SET EMAIL = ?, LOGIN = ?, NAME = ?, BIRTHDAY = ? " +
@@ -61,51 +59,55 @@ public class UserDbService implements UserService {
         return doesExist ? user : null;
     }
 
-    @Override
     public List<User> addFriend(Integer userId, Integer friendId) {
+        if (getUserById(friendId) == null) throw new NoSuchBodyException("friendId друга отсутствует");
         String sql = "INSERT INTO FRIENDSHIP (USER_ID, FRIEND_ID, STATUS) " +
-                     "VALUES (?, ?, 'NOT_CONFIRMED');";
+                "VALUES (?, ?, 'NOT_CONFIRMED');";
         jdbcTemplate.update(sql, userId, friendId);
         return List.of(getUserById(userId), getUserById(friendId));
     }
 
-    @Override
     public List<User> deleteFriend(Integer userId, Integer friendId) {
         String sql = "DELETE " +
-                     "FROM FRIENDSHIP " +
-                     "WHERE USER_ID = ? AND FRIEND_ID = ?;";
+                "FROM FRIENDSHIP " +
+                "WHERE USER_ID = ? AND FRIEND_ID = ?;";
         jdbcTemplate.update(sql, userId, friendId);
         return List.of(getUserById(userId), getUserById(friendId));
     }
 
-    @Override
     public List<User> confirmFriend(Integer userId, Integer friendId) {
         String sql = "UPDATE FRIENDSHIP " +
-                     "SET STATUS = 'CONFIRMED' " +
-                     "WHERE USER_ID =? AND FRIEND_ID = ?;";
-        return jdbcTemplate.query(sql, UserDbService::mapRowToUser, userId);
+                "SET STATUS = 'CONFIRMED' " +
+                "WHERE USER_ID =? AND FRIEND_ID = ?;";
+        return jdbcTemplate.query(sql, UserStorage::mapRowToUser, userId);
     }
 
-    @Override
     public Set<User> getAllFriends(Integer userId) {
+        if (getUserById(userId) == null) throw new NoSuchBodyException("userId пользователя отсутствует");
         String sql = "SELECT USER_ID, EMAIL, LOGIN, NAME, BIRTHDAY " +
-                     "FROM " +
-                     "(SELECT FRIEND_ID " +
-                     "FROM FRIENDSHIP " +
-                     "WHERE USER_ID = ?) AS fr " +
-                     "LEFT JOIN FILM_USER AS f ON f.USER_ID = fr.FRIEND_ID;";
-        return new HashSet<>(jdbcTemplate.query(sql, UserDbService::mapRowToUser, userId));
+                "FROM " +
+                "(SELECT FRIEND_ID " +
+                "FROM FRIENDSHIP " +
+                "WHERE USER_ID = ?) AS fr " +
+                "LEFT JOIN FILM_USER AS f ON f.USER_ID = fr.FRIEND_ID;";
+        return new HashSet<>(jdbcTemplate.query(sql, UserStorage::mapRowToUser, userId));
     }
 
-    @Override
     public Set<User> getCommonFriends(Integer userId, Integer otherUserId) {
         String sql = "SELECT USER_ID, EMAIL, LOGIN, NAME, BIRTHDAY " +
-                     "FROM FILM_USER " +
-                     "WHERE USER_ID IN ( " +
-                     "SELECT FRIEND_ID " +
-                     "FROM FRIENDSHIP " +
-                     "WHERE USER_ID = ? AND FRIEND_ID IN (SELECT FRIEND_ID FROM FRIENDSHIP WHERE USER_ID = ?));";
-        return new HashSet<>(jdbcTemplate.query(sql, UserDbService::mapRowToUser, userId, otherUserId));
+                "FROM FILM_USER " +
+                "WHERE USER_ID IN ( " +
+                "SELECT FRIEND_ID " +
+                "FROM FRIENDSHIP " +
+                "WHERE USER_ID = ? AND FRIEND_ID IN (SELECT FRIEND_ID FROM FRIENDSHIP WHERE USER_ID = ?));";
+        return new HashSet<>(jdbcTemplate.query(sql, UserStorage::mapRowToUser, userId, otherUserId));
+    }
+
+    public User delete(Integer userId) {
+        User user = getUserById(userId);
+        String sqlQuery = "DELETE FROM FILM_USER WHERE USER_ID=?";
+        jdbcTemplate.update(sqlQuery, userId);
+        return user;
     }
 
     //............................ Служебные методы ..............................................

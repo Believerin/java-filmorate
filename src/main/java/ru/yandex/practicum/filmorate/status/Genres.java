@@ -4,9 +4,9 @@ public enum Genres {
     Комедия(1),
     Драма(2),
     Мультфильм(3),
-    Фантастика(4),
+    Триллер(4),
     Документальный(5),
-    Остросюжетный(6);
+    Боевик(6);
 
     private final int genresId;
     Genres(int genresId) {

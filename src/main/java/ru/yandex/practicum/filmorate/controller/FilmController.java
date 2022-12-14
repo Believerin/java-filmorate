@@ -1,16 +1,19 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.*;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.NoSuchBodyException;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.*;
+import ru.yandex.practicum.filmorate.service.DirectorService;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import javax.validation.Valid;
+import javax.validation.constraints.*;
 import java.util.Collection;
 import java.util.List;
+
+import static ru.yandex.practicum.filmorate.model.Film.CINEMA_START;
 
 @RestController
 @RequestMapping
@@ -18,10 +21,11 @@ import java.util.List;
 public class FilmController {
 
     private final FilmService filmService;
+    private final DirectorService directorService;
 
-    @Autowired
-    public FilmController(@Qualifier("Secondary") FilmService filmService) {
+    public FilmController(FilmService filmService, DirectorService directorService) {
         this.filmService = filmService;
+        this.directorService = directorService;
     }
 
     @GetMapping("/films")
@@ -45,35 +49,39 @@ public class FilmController {
     }
 
     @PutMapping("/films/{id}/like/{userId}")
-    public Film addLike (@PathVariable Integer id, @PathVariable Integer userId) {
+    public Film addLike(@PathVariable Integer id, @PathVariable Integer userId) {
         if (id <= 0 || userId <= 0) {
-            throw new NoSuchBodyException(id < 0 & userId < 0 ? "id фильма и userId пользователя"
-                    : id < 0 ? "id фильма" : "userId пользователя");
+            throw new NoSuchBodyException(id < 0 & userId < 0 ? "id фильма и userId пользователя отсутствует"
+                    : id < 0 ? "id фильма" : "userId пользователя отсутствует");
         }
         return filmService.addLike(id, userId);
     }
 
     @DeleteMapping("/films/{id}/like/{userId}")
-    public Film deleteLike (@PathVariable Integer id, @PathVariable Integer userId) {
+    public Film deleteLike(@PathVariable Integer id, @PathVariable Integer userId) {
         if (id <= 0 || userId <= 0) {
-            throw new NoSuchBodyException(id < 0 & userId < 0 ? "id фильма и userId пользователя"
-                    : id < 0 ? "id фильма" : "userId пользователя");
+            throw new NoSuchBodyException(id < 0 & userId < 0 ? "id фильма и userId пользователя отсутствует"
+                    : id < 0 ? "id фильма отсутствует" : "userId пользователя отсутствует");
         }
         return filmService.deleteLike(id, userId);
     }
 
     @GetMapping("/films/popular")
-    public List<Film> getMostPopularFilms (@RequestParam(defaultValue = "10") int count) {
-        if (count <= 0) {
-            throw new NoSuchBodyException("count");
+    public List<Film> getMostPopularFilms (@RequestParam(defaultValue = "10") @Min(1) int count,
+                                           @RequestParam(required=false) Integer genreId,
+                                           @RequestParam(required=false) @Min(1) @Max(6) Integer year) {
+        if (genreId == null && year == null) {
+            return filmService.getMostPopularFilms(count);
+        } else if (year <= CINEMA_START.getYear()) {
+            throw new NoSuchBodyException("year отсутствует");
         }
-        return filmService.getMostPopularFilms(count);
+        return filmService.getMostPopularFilmsByGenreOrYear(count, genreId, year);
     }
 
     @GetMapping("/mpa/{id}")
-    public Mpa getMpa (@PathVariable Integer id) {
+    public Mpa getMpa(@PathVariable Integer id) {
         if (id <= 0) {
-            throw new NoSuchBodyException("id");
+            throw new NoSuchBodyException("id отсутствует");
         }
         return filmService.getMpa(id);
     }
@@ -84,9 +92,9 @@ public class FilmController {
     }
 
     @GetMapping("/genres/{id}")
-    public Genre getGenre (@PathVariable Integer id) {
+    public Genre getGenre(@PathVariable Integer id) {
         if (id <= 0) {
-            throw new NoSuchBodyException("id");
+            throw new NoSuchBodyException("id отсутствует");
         }
         return filmService.getGenre(id);
     }
@@ -94,5 +102,57 @@ public class FilmController {
     @GetMapping("/genres")
     public Collection<Genre> findAllGenres() {
         return filmService.findAllGenres();
+    }
+
+    @GetMapping("/films/common")
+    @ResponseBody
+    public List<Film> getCommonFilms(@RequestParam int userId,
+                                     @RequestParam int friendId) {
+        return filmService.getCommonFilms(userId, friendId);
+    }
+
+    @DeleteMapping("/films/{filmId}")
+    public Film delete(@PathVariable Integer filmId) {
+        return filmService.delete(filmId);
+    }
+
+    //------Эндпоинт для поиска фильмов режиссера по году/популярности
+    @GetMapping("/films/director/{directorId}")
+    public Collection<Film> getDirectorFilmsSortByYearOrLikes(@PathVariable int directorId, @RequestParam String sortBy) {
+        if (directorService.getDirectorById(directorId) == null) {
+            throw new NoSuchBodyException("id отсутствует");
+        } else if (!sortBy.equals("year") & !sortBy.equals("likes")) {
+            throw new NoSuchBodyException("sortBy отсутствует");
+        }
+        switch (sortBy) {
+            case "year":
+                return directorService.getFilmsByDirectorSortByReleaseYear(directorId);
+            case "likes":
+                return directorService.getFilmsByDirectorSortByLikes(directorId);
+            default:
+                return List.of();
+        }
+    }
+
+    //------Эндпоинт для поиска фильмов по названию и/или режиссеру
+    @GetMapping("/films/search")
+    public Collection<Film> getFilmsByTitleDirectorOrBoth(@RequestParam String query, @RequestParam String by) {
+        boolean isDirector = false, isTitle = false;
+        if (query.isEmpty() || query.isBlank()) {
+            throw new ValidationException("query");
+        }
+        if (by.isEmpty() || by.isBlank()) {
+            throw new ValidationException("by");
+        }
+        if (by.contains("director")) {
+            isDirector = true;
+        }
+        if (by.contains("title")) {
+            isTitle = true;
+        }
+        if (!isDirector & !isTitle) {
+            throw new ValidationException("by");
+        }
+        return filmService.searchFilms(query, isDirector, isTitle);
     }
 }

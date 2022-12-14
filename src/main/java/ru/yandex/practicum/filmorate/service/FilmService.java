@@ -19,15 +19,26 @@ public interface FilmService {
 
     Mpa getMpa(int id);
 
-    Genre getGenre (int id);
+    Genre getGenre(int id);
 
     Collection<Mpa> findAllMpa();
 
     Collection<Genre> findAllGenres();
 
-    Film addLike (Integer filmId, Integer userId);
+    Film addLike(Integer filmId, Integer userId);
 
-    Film deleteLike (Integer filmId, Integer userId);
+    Film deleteLike(Integer filmId, Integer userId);
 
     List<Film> getMostPopularFilms(int count);
+
+    List<Film> getMostPopularFilmsByGenreOrYear(Integer count, Integer genreId, Integer year);
+
+    List<Film> getCommonFilms(int userId, int friendId);
+
+    /*Эндпоинт для удаления пользователей*/
+    Film delete(Integer filmId);
+    /*Эндпоинт для удаления пользователей*/
+
+    List<Film> searchFilms(String query, boolean isDirector, boolean isTitle);
+
 }
